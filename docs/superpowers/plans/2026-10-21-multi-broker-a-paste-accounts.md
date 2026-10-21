@@ -391,21 +391,24 @@ Expected: FAIL — `FakeSpreadsheet is not a constructor` (또는 `positions.gs`
 
 - [ ] **Step 3: Write minimal implementation**
 
-`tests/fake_sheets.js` — `FakeSheet`에 메서드와 `FakeSpreadsheet`를 추가한다 (기존 코드는 그대로 두고 파일 끝 `module.exports` 줄 위/아래만 바꾼다):
+`tests/fake_sheets.js` 수정 — 세 곳:
 
+(1) `getRange(...)`가 돌려주는 객체(`return { getValue: ..., setNumberFormat: ..., ... }`)에 세 줄을 더한다:
 ```js
-// FakeSheet 안에 추가 (getRange 반환 객체에 setFormulas/setFormula/setNote도 추가)
-//   getRange(...)가 돌려주는 객체:
-//     setFormulas: (vals) => vals.forEach((row, i) => row.forEach((v, j) => sh.set(r + i, col + j, v))),
-//     setFormula: (f) => sh.set(r, col, f),
-//     setNote: () => {},
-//   FakeSheet 메서드:
-//     getName() { return this.name; }
-//     setName(n) { if (this.owner) { delete this.owner.sheets[this.name]; this.owner.sheets[n] = this; } this.name = n; return this; }
-//     hideSheet() { this.hidden = true; return this; }
-//     showSheet() { this.hidden = false; return this; }
-//     isSheetHidden() { return !!this.hidden; }
-
+      setFormulas: (vals) => vals.forEach((row, i) => row.forEach((v, j) => sh.set(r + i, col + j, v))),
+      setFormula: (f) => sh.set(r, col, f),
+      setNote: () => {},
+```
+(2) `class FakeSheet` 안, `getMaxRows() {...}` 아래에 메서드를 더한다:
+```js
+  getName() { return this.name; }
+  setName(n) { if (this.owner) { delete this.owner.sheets[this.name]; this.owner.sheets[n] = this; } this.name = n; return this; }
+  hideSheet() { this.hidden = true; return this; }
+  showSheet() { this.hidden = false; return this; }
+  isSheetHidden() { return !!this.hidden; }
+```
+(3) 파일 끝의 `module.exports = { FakeSheet };`를 아래로 바꾼다:
+```js
 class FakeSpreadsheet {
   constructor(sheets) {            // { 이름: FakeSheet }
     this.sheets = sheets;
