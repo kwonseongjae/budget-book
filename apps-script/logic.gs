@@ -73,7 +73,7 @@ function routeEdit(ev) {
   if (ev.sheet === '증권계좌' && ev.col === 1 && ev.row >= 5 && ev.row <= 14) {  // 계좌 이름 → 계좌 탭 생성·이름 변경·숨김
     var accFrom = isBlank(ev.oldValue) ? '' : String(ev.oldValue).trim();
     var accTo = isBlank(ev.value) ? '' : String(ev.value).trim();
-    return accFrom === accTo ? null : { type: 'brokerTab', from: accFrom, to: accTo };
+    return accFrom === accTo ? null : { type: 'brokerTab', row: ev.row, from: accFrom, to: accTo };
   }
   if (ev.sheet === '빠른입력' && ev.row === 13 && ev.col === 2) {  // 폰 빠른 입력: 맨 아래 '추가' 체크
     return ev.value === 'TRUE' ? { type: 'quick' } : null;

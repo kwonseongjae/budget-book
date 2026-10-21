@@ -11,6 +11,7 @@ var POS_ALIASES = {
   currency: ['통화', '통화코드']
 };
 var POS_SUMMARY = /합계|총계|소계|^total$/i;
+var POS_WON = /\((원|원화|KRW)\)|원화/i;
 
 // '1,234원' '+5.2%' '(1,234)' → 숫자. 못 읽으면 NaN.
 function posNum(x) {
@@ -59,7 +60,11 @@ function parsePositions(cells) {
   var head = -1, idx = {};
   for (var i = 0; i < Math.min(rows.length, 8) && head < 0; i++) {
     var m = {};
-    rows[i].forEach(function (c, j) { var k = posHeadKey(c); if (k && m[k] === undefined) m[k] = j; });
+    rows[i].forEach(function (c, j) {
+      var k = posHeadKey(c);
+      if (!k) return;
+      if (m[k] === undefined || (POS_WON.test(String(c)) && !POS_WON.test(String(rows[i][m[k]])))) m[k] = j;  // 같은 항목 열이 둘이면 (원)·원화 열
+    });
     if (m.name !== undefined && (m.value !== undefined || m.cost !== undefined ||
         (m.qty !== undefined && (m.price !== undefined || m.unit !== undefined)))) {
       head = i; idx = m;
@@ -81,6 +86,8 @@ function parsePositions(cells) {
     if (isNaN(cost) && !isNaN(qty)) cost = qty * posNum(cell('unit'));
     if (isNaN(value)) { failed.push(text); return; }
     var cur = isBlank(cell('currency')) ? 'KRW' : String(cell('currency')).trim().toUpperCase();
+    if (cur !== 'KRW' && cur !== '원') { failed.push(text); return; }  // 금액은 원화로만 합산한다 (외화가 원화로 더해지지 않게)
+    cur = 'KRW';
     positions.push({ code: isBlank(cell('code')) ? '' : String(cell('code')).trim(), name: name,
       qty: isNaN(qty) ? '' : qty, cost: isNaN(cost) ? '' : cost, value: value, currency: cur });
   });
@@ -89,12 +96,12 @@ function parsePositions(cells) {
 
 // 증권종목 정규 표(계좌|코드|종목명|수량|매입금액|평가금액|통화)에서 그 계좌 줄을 새 줄로 바꾼다. 다른 계좌 줄은 그대로, 빈 줄은 버린다.
 function replaceAccountRows(table, account, positions) {
-  var kept = table.filter(function (r) { return !isBlank(r[0]) && r[0] !== account; });
+  var kept = table.filter(function (r) { return !isBlank(r[0]) && String(r[0]).trim() !== String(account).trim(); });
   return kept.concat(positions.map(function (p) { return [account, p.code, p.name, p.qty, p.cost, p.value, p.currency]; }));
 }
 
 function renameAccountRows(table, from, to) {
-  return table.map(function (r) { return r[0] === from ? [to].concat(r.slice(1)) : r; });
+  return table.map(function (r) { return String(r[0]).trim() === String(from).trim() ? [to].concat(r.slice(1)) : r; });
 }
 
 // 계좌 이름 → 탭 이름('계좌_' + 이름)이 되므로 시트 탭에 쓸 수 없는 문자와 길이를 막는다. 정상이면 ''.

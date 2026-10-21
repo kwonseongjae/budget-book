@@ -14,7 +14,8 @@ KIS_HOLD = "한투종목"  # 한투 ISA 종목 목록: 신랑 A:E, 신부 G:K (a
 # 다증권사(A단계): 계좌 목록·붙여넣기 — 주소는 apps-script/positions.gs와 같아야 한다 (tests/test_broker_tabs.py가 대조)
 BROKER_ACCTS, BROKER_POS = "증권계좌", "증권종목"
 POS_ACCOUNT, POS_CHECK, POS_RESULT = "B2", "B3", "C3"
-POS_PASTE, POS_TABLE = "A6:F205", "H6:N1005"
+POS_PASTE, POS_TABLE = "A6:T205", "A2:G1001"
+POS_TABLE_TAB = "증권종목표"  # 정규 종목 표(숨김) — 붙여넣기 칸 옆에 두면 넓은 표가 덮어쓴다
 ACCT_NAMES, ACCT_PASTED = "A5:A14", "F5:F14"
 ACCOUNT_TAB_PREFIX = "계좌_"
 COUPLE, NETWORTH = "부부", "자산기록"
@@ -55,7 +56,7 @@ SHEETS = [
     (NETWORTH, 1800, 200, 12, False),  # 차트를 F열에 두므로 12열
     (INVEST, 1900, 100, 10, False),
     (BROKER_ACCTS, 2800, 40, 9, False),
-    (BROKER_POS, 2810, 1010, 14, False),
+    (BROKER_POS, 2810, 1010, 20, False),
     (CAL, 600, 20, 7, False),
     (SEARCH, 700, 1000, 10, False),
     (STOCK, 1500, 120, 16, False),
@@ -74,6 +75,7 @@ SHEETS = [
     (KIS_RAW, 1950, 3, 7, True),
     (INVEST_LOG, 2000, 1000, 12, True),
     (KIS_HOLD, 1960, 101, 11, True),
+    (POS_TABLE_TAB, 2820, 1010, 7, True),
 ]
 SHEET_ID = {title: sid for title, sid, *_ in SHEETS}
 # 자주 안 쓰는 보기 탭: 처음엔 숨겨 두고 PC 메뉴 '가계부'로 꺼낸다 (SHEETS의 hidden은 사람이 안 보는 내부 탭)

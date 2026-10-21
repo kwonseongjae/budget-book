@@ -32,8 +32,8 @@ test('parsePositions: 칸 단위 표 — 수량×단가로 계산, 합계 줄은
 
 test('parsePositions: 평가금액이 없으면 수량×현재가, 코드·통화 열은 있으면 읽음', () => {
   const c = load();
-  const r = plain(c.parsePositions([['종목코드', '종목명', '수량', '매입금액', '현재가', '통화'], ['AAPL', 'Apple', 2, '300,000', '200,000', 'usd']]));
-  assert.deepEqual(r.positions[0], { code: 'AAPL', name: 'Apple', qty: 2, cost: 300000, value: 400000, currency: 'USD' });
+  const r = plain(c.parsePositions([['종목코드', '종목명', '수량', '매입금액', '현재가', '통화'], ['AAPL', 'Apple', 2, '300,000', '200,000', 'krw']]));
+  assert.deepEqual(r.positions[0], { code: 'AAPL', name: 'Apple', qty: 2, cost: 300000, value: 400000, currency: 'KRW' });
 });
 
 test('parsePositions: 첫 열에 한 줄씩 들어온 CSV(따옴표 안 쉼표)와 탭 구분', () => {
@@ -81,4 +81,26 @@ test('validAccountName: 금지 문자·빈 이름·너무 긴 이름은 문장�
   for (const bad of ['a/b', 'a[1]', 'a*', 'a?', 'a:b', 'a\\b']) assert.match(c.validAccountName(bad), /사용할 수 없는 문자/, bad);
   assert.match(c.validAccountName(''), /이름/);
   assert.match(c.validAccountName('가'.repeat(91)), /90자/);
+});
+
+test('parsePositions: 원화가 아닌 통화 줄은 실패로 (원화 금액에 섞여 합산되지 않게)', () => {
+  const c = load();
+  const r = plain(c.parsePositions([['종목명', '평가금액', '통화'], ['삼성', 1000, 'KRW'], ['AAPL', 100, 'USD']]));
+  assert.deepEqual(r.positions.map((p) => p.name), ['삼성']);
+  assert.equal(r.failed.length, 1);
+  assert.match(r.failed[0], /AAPL/);
+});
+
+test('parsePositions: 같은 항목 열이 둘이면 (원)·원화가 붙은 열을 고른다', () => {
+  const c = load();
+  const r = plain(c.parsePositions([['종목명', '평가금액(USD)', '평가금액(원)'], ['AAPL', 100, 140000]]));
+  assert.equal(r.positions[0].value, 140000);
+});
+
+test('replaceAccountRows·renameAccountRows: 계좌 이름이 숫자로 저장된 줄도 같은 계좌로 본다', () => {
+  const c = load();
+  const table = [[1, 'x', 'a', 1, 2, 3, 'KRW'], ['b', 'y', 'c', 1, 2, 3, 'KRW']];
+  const p = [{ code: '9', name: 'n', qty: 1, cost: 2, value: 3, currency: 'KRW' }];
+  assert.deepEqual(plain(c.replaceAccountRows(table, '1', p)).map((r) => r[0]), ['b', '1']);
+  assert.deepEqual(plain(c.renameAccountRows(table, '1', 'z')).map((r) => r[0]), ['z', 'b']);
 });

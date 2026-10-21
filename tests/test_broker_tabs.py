@@ -24,7 +24,7 @@ def _state(titles=ALL):
 
 def test_addresses_match_the_script():
     for py, gs in [("POS_ACCOUNT", "POS_ACCOUNT"), ("POS_CHECK", "POS_CHECK"), ("POS_RESULT", "POS_RESULT"), ("POS_PASTE", "POS_PASTE"),
-                   ("POS_TABLE", "POS_TABLE"), ("ACCT_NAMES", "ACCT_NAMES"), ("ACCT_PASTED", "ACCT_PASTED"),
+                   ("POS_TABLE", "POS_TABLE"), ("POS_TABLE_TAB", "POS_TABLE_TAB"), ("ACCT_NAMES", "ACCT_NAMES"), ("ACCT_PASTED", "ACCT_PASTED"),
                    ("ACCOUNT_TAB_PREFIX", "ACCOUNT_TAB_PREFIX")]:
         assert getattr(layout, py) == _gs(gs), py
     assert (layout.BROKER_ACCTS, layout.BROKER_POS) == (_gs("ACCT_TAB"), _gs("POS_TAB")) == ("증권계좌", "증권종목")
@@ -58,10 +58,11 @@ def test_name_validation_rejects_tab_forbidden_characters_and_duplicates():
 
 def test_positions_tab_layout_matches_script_cells():
     vals = {e["range"]: e["values"] for e in broker_positions.values()}
-    assert vals["증권종목!H5:N5"] == [["계좌", "코드", "종목명", "수량", "매입금액", "평가금액", "통화"]]
+    assert vals["증권종목표!A1:G1"] == [["계좌", "코드", "종목명", "수량", "매입금액", "평가금액", "통화"]]   # 정규 표는 숨김 탭 (붙여넣기 칸 옆에 두면 넓은 표가 덮어쓴다)
+    assert vals["증권종목!H4:N5"] == [[""] * 7, [""] * 7]                                              # 예전 자리의 머리글은 지운다
     for written in ("증권종목!B2", "증권종목!B3", "증권종목!C3"):
         assert written not in vals                                   # 계좌 선택·체크·결과는 사용자/스크립트 칸
-    assert broker_positions.INPUTS == ["증권종목!B2:B3", "증권종목!A6:F205"]
+    assert broker_positions.INPUTS == ["증권종목!B2:B3", "증권종목!A6:T205"]
     rules = {tuple(sorted(r["setDataValidation"]["range"].items())): r["setDataValidation"]["rule"]
              for r in broker_positions.formats() if "setDataValidation" in r}
     assert rules[tuple(sorted(layout.a1_to_grid("증권종목!B3").items()))]["condition"]["type"] == "BOOLEAN"
@@ -70,12 +71,26 @@ def test_positions_tab_layout_matches_script_cells():
 
 
 def test_live_migration_adds_both_tabs_once():
-    structure, values, _v = mc.plan(_state(ALL - {layout.BROKER_ACCTS, layout.BROKER_POS}))
+    structure, values, _v = mc.plan(_state(ALL - {layout.BROKER_ACCTS, layout.BROKER_POS, layout.POS_TABLE_TAB}))
     added = {r["addSheet"]["properties"]["title"] for r in structure if "addSheet" in r}
-    assert {layout.BROKER_ACCTS, layout.BROKER_POS} <= added
-    assert {"증권계좌!A4:G4", "증권종목!H5:N5"} <= {e["range"] for e in values}
+    assert {layout.BROKER_ACCTS, layout.BROKER_POS, layout.POS_TABLE_TAB} <= added
+    assert {"증권계좌!A4:G4", "증권종목표!A1:G1"} <= {e["range"] for e in values}
     again = mc.plan(_state())[0]
     assert not {layout.BROKER_ACCTS, layout.BROKER_POS} & {r["addSheet"]["properties"]["title"] for r in again if "addSheet" in r}
+
+
+def test_live_positions_tab_grows_to_paste_width_once():
+    st = _state()._replace(grid={layout.SHEET_ID[layout.BROKER_POS]: (1010, 14)})
+    grow = [r["appendDimension"] for r in mc.plan(st)[0] if "appendDimension" in r and r["appendDimension"]["sheetId"] == layout.SHEET_ID[layout.BROKER_POS]]
+    assert grow == [{"sheetId": 2810, "dimension": "COLUMNS", "length": 6}]
+    done = _state()._replace(grid={layout.SHEET_ID[layout.BROKER_POS]: (1010, 20)})
+    assert not [r for r in mc.plan(done)[0] if "appendDimension" in r and r["appendDimension"]["sheetId"] == layout.SHEET_ID[layout.BROKER_POS]]
+
+
+def test_hidden_position_table_tab_is_internal():
+    props = {t: (sid, rows, cols, hidden) for t, sid, rows, cols, hidden in layout.SHEETS}
+    assert props[layout.POS_TABLE_TAB] == (2820, 1010, 7, True) and props[layout.BROKER_POS] == (2810, 1010, 20, False)
+    assert layout.POS_PASTE == "A6:T205" and layout.POS_TABLE == "A2:G1001"
 
 
 def test_guide_explains_paste_flow_and_auto_tab():
