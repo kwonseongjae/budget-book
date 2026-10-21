@@ -23,7 +23,7 @@ def _state(titles=ALL):
 
 
 def test_addresses_match_the_script():
-    for py, gs in [("POS_ACCOUNT", "POS_ACCOUNT"), ("POS_CHECK", "POS_CHECK"), ("POS_RESULT", "POS_RESULT"), ("POS_PASTE", "POS_PASTE"),
+    for py, gs in [("POS_ACCOUNT", "POS_ACCOUNT"), ("POS_CHECK", "POS_CHECK"), ("POS_MODE", "POS_MODE"), ("POS_RESULT", "POS_RESULT"), ("POS_PASTE", "POS_PASTE"),
                    ("POS_TABLE", "POS_TABLE"), ("POS_TABLE_TAB", "POS_TABLE_TAB"), ("ACCT_NAMES", "ACCT_NAMES"), ("ACCT_PASTED", "ACCT_PASTED"),
                    ("ACCOUNT_TAB_PREFIX", "ACCOUNT_TAB_PREFIX")]:
         assert getattr(layout, py) == _gs(gs), py
@@ -62,10 +62,13 @@ def test_positions_tab_layout_matches_script_cells():
     assert vals["증권종목!H4:N5"] == [[""] * 7, [""] * 7]                                              # 예전 자리의 머리글은 지운다
     for written in ("증권종목!B2", "증권종목!B3", "증권종목!C3"):
         assert written not in vals                                   # 계좌 선택·체크·결과는 사용자/스크립트 칸
-    assert broker_positions.INPUTS == ["증권종목!B2:B3", "증권종목!A6:T205"]
+    assert broker_positions.INPUTS == ["증권종목!B2:B4", "증권종목!A6:T205"]
     rules = {tuple(sorted(r["setDataValidation"]["range"].items())): r["setDataValidation"]["rule"]
              for r in broker_positions.formats() if "setDataValidation" in r}
     assert rules[tuple(sorted(layout.a1_to_grid("증권종목!B3").items()))]["condition"]["type"] == "BOOLEAN"
+    mode = rules[tuple(sorted(layout.a1_to_grid("증권종목!B4").items()))]
+    assert mode["condition"]["type"] == "ONE_OF_LIST" and [x["userEnteredValue"] for x in mode["condition"]["values"]] == ["추가·갱신 (기본)", "전체 교체"]
+    assert vals["증권종목!A2:A4"] == [["계좌"], ["반영 (체크)"], ["반영 방식"]] and "증권종목!B4" not in vals
     pick = rules[tuple(sorted(layout.a1_to_grid("증권종목!B2").items()))]
     assert pick["condition"]["type"] == "ONE_OF_RANGE" and pick["condition"]["values"][0]["userEnteredValue"] == "=증권계좌!$A$5:$A$14"
 
@@ -87,6 +90,12 @@ def test_live_positions_tab_grows_to_paste_width_once():
     assert not [r for r in mc.plan(done)[0] if "appendDimension" in r and r["appendDimension"]["sheetId"] == layout.SHEET_ID[layout.BROKER_POS]]
 
 
+def test_live_migration_reapplies_mode_dropdown_each_run():
+    structure = mc.plan(_state())[0]
+    b4 = layout.a1_to_grid("증권종목!B4")
+    assert any(r.get("setDataValidation", {}).get("range") == b4 for r in structure)
+
+
 def test_hidden_position_table_tab_is_internal():
     props = {t: (sid, rows, cols, hidden) for t, sid, rows, cols, hidden in layout.SHEETS}
     assert props[layout.POS_TABLE_TAB] == (2820, 1010, 7, True) and props[layout.BROKER_POS] == (2810, 1010, 20, False)
@@ -97,6 +106,6 @@ def test_guide_explains_paste_flow_and_auto_tab():
     import guide
     rows = {a: b for _k, a, b in guide.CONTENT}
     assert "계좌_" in rows["[증권계좌]"] and "자동" in rows["[증권계좌]"]
-    assert "머리글" in rows["[증권종목]"] and "B3" in rows["[증권종목]"] and "교체" in rows["[증권종목]"]
+    assert "머리글" in rows["[증권종목]"] and "B3" in rows["[증권종목]"] and "교체" in rows["[증권종목]"] and "추가" in rows["[증권종목]"]
     tab_map = " ".join(b for k, a, b in guide.CONTENT if a == "투자")
     assert "[증권계좌]" in tab_map

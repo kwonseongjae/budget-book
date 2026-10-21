@@ -14,8 +14,9 @@ function setup() {
   const tbl = new FakeSheet([[]]);
   const acct = new FakeSheet([[], [], [], [], ['신랑 키움'], ['신부 삼성']]);
   const ss = new FakeSpreadsheet({ '증권종목': pos, '증권종목표': tbl, '증권계좌': acct });
-  const paste = (account, rows) => {
+  const paste = (account, rows, mode) => {
     pos.set(2, 2, account);
+    pos.set(4, 2, mode === undefined ? '' : mode);
     rows.forEach((r, i) => r.forEach((v, j) => pos.set(6 + i, 1 + j, v)));
     let checkbox = null;
     ctx.importPositions(ss, { setValue(v) { checkbox = v; } });
@@ -36,11 +37,11 @@ test('importPositions: 종목이 정규 표에 들어가고, 붙여넣기 칸은
   assert.match(t.result(), /^✓ 2종목 반영/);
 });
 
-test('importPositions: 같은 계좌를 다시 붙여넣으면 교체되고 다른 계좌 줄은 그대로', () => {
+test('importPositions: 방식이 전체 교체면 같은 계좌를 다시 붙여넣을 때 교체되고 다른 계좌 줄은 그대로', () => {
   const t = setup();
   t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110]]);
   t.paste('신부 삼성', [HEAD, ['B', 1, 200, 210]]);
-  t.paste('신랑 키움', [HEAD, ['C', 2, 300, 330]]);
+  t.paste('신랑 키움', [HEAD, ['C', 2, 300, 330]], '전체 교체');
   assert.deepEqual(t.table().map((r) => [r[0], r[2]]), [['신부 삼성', 'B'], ['신랑 키움', 'C']]);
 });
 
@@ -102,7 +103,7 @@ test('importPositions: 계좌 이름이 숫자로 저장된 줄도 같은 계좌
   t.acct.set(5, 1, '1');
   t.paste('1', [HEAD, ['A', 1, 100, 110]]);
   t.tbl.set(2, 1, 1);                                                  // 시트가 숫자로 바꿔 저장한 모양
-  t.paste('1', [HEAD, ['C', 2, 300, 330]]);
+  t.paste('1', [HEAD, ['C', 2, 300, 330]], '전체 교체');
   assert.deepEqual(t.table().map((r) => r[2]), ['C']);
 });
 
@@ -131,7 +132,7 @@ test('importPositions: 반영하면 계좌 탭에 종목명·평가금액 원형
   t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110], ['B', 2, 200, 190]]);
   assert.equal(probe.charts.length, 1);
   assert.deepEqual([probe.charts[0].type, probe.charts[0].ranges], ['PIE', ['B12:B13', 'E12:E13']]);
-  t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110], ['B', 2, 200, 190], ['C', 3, 300, 330]]);
+  t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110], ['B', 2, 200, 190], ['C', 3, 300, 330]], '전체 교체');
   assert.equal(probe.charts.length, 1);                                       // 옛 그래프는 지우고 새로
   assert.deepEqual(probe.charts[0].ranges, ['B12:B14', 'E12:E14']);
   assert.match(t.result(), /^✓ 3종목 반영$/);
@@ -141,7 +142,7 @@ test('importPositions: 종목이 50개를 넘어도 그래프는 50개까지, �
   const t = setup();
   const probe = chartProbe(t, '신랑 키움');
   const many = Array.from({ length: 60 }, (_, i) => ['S' + i, 1, 10, 11]);
-  t.paste('신랑 키움', [HEAD].concat(many));
+  t.paste('신랑 키움', [HEAD].concat(many), '전체 교체');
   assert.deepEqual(probe.charts[0].ranges, ['B12:B61', 'E12:E61']);
   t.paste('신랑 키움', [['foo', 'bar'], ['1', '2']]);                          // 머리글 없음 → 거부
   assert.equal(probe.charts.length, 1);
@@ -164,4 +165,36 @@ test('importPositions: 그래프를 못 만들어도 종목 반영은 되고 결
   assert.equal(t.table().length, 1);
   assert.match(t.result(), /그래프는 만들지 못/);
   assert.equal(probe.charts.length, 0);
+});
+
+// ---- 방식: 기본은 '추가·갱신' (있는 종목은 그대로 두고 같은 종목은 갱신, 새 종목은 추가), '전체 교체'는 표 전체로 바꿈 ----
+test('importPositions: 기본(추가·갱신)은 기존 종목을 지우지 않고 새 종목을 더한다', () => {
+  const t = setup();
+  t.paste('신랑 키움', [HEAD, ['삼성전자', 10, 700000, 750000]]);
+  t.paste('신랑 키움', [HEAD, ['SK하이닉스', 2, 400000, 380000]]);
+  assert.deepEqual(t.table().map((r) => [r[0], r[2], r[5]]), [['신랑 키움', '삼성전자', 750000], ['신랑 키움', 'SK하이닉스', 380000]]);
+  assert.match(t.result(), /^✓ 1종목 반영 · 계좌 전체 2종목$/);
+});
+
+test('importPositions: 추가·갱신에서 같은 종목(코드 또는 이름)은 값을 갱신하고 줄이 늘지 않는다', () => {
+  const t = setup();
+  t.paste('신랑 키움', [['종목코드', '종목명', '수량', '매입금액', '평가금액'], ['005930', '삼성전자', 10, 700000, 750000]]);
+  t.paste('신랑 키움', [['종목코드', '종목명', '수량', '매입금액', '평가금액'], ['005930', '삼성전자(우)', 12, 800000, 900000]]);   // 같은 코드 → 갱신
+  t.paste('신랑 키움', [HEAD, ['삼성전자(우)', 13, 810000, 910000]]);                                                   // 코드 없음 → 이름으로 갱신
+  assert.deepEqual(t.table().map((r) => [r[2], r[3], r[5]]), [['삼성전자(우)', 13, 910000]]);
+});
+
+test("importPositions: '전체 교체'는 붙여넣은 표에 없는 종목을 지운다 (판 종목 정리)", () => {
+  const t = setup();
+  t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110], ['B', 1, 100, 110]]);
+  t.paste('신랑 키움', [HEAD, ['B', 2, 200, 220]], '전체 교체');
+  assert.deepEqual(t.table().map((r) => [r[2], r[5]]), [['B', 220]]);
+});
+
+test('importPositions: 그래프는 계좌 전체 종목 수에 맞춘다 (추가·갱신)', () => {
+  const t = setup();
+  const probe = chartProbe(t, '신랑 키움');
+  t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110]]);
+  t.paste('신랑 키움', [HEAD, ['B', 1, 100, 110]]);
+  assert.deepEqual(probe.charts[0].ranges, ['B12:B13', 'E12:E13']);
 });

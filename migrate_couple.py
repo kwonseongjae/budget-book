@@ -15,6 +15,7 @@ import chart_fit
 import fit_dims
 import asset_status
 import breakdown
+import broker_positions
 import budget_reco
 import cards
 import category_bars
@@ -447,7 +448,9 @@ def _always(s: State) -> list[dict]:
             + [r for r in meritz_style.structure_requests() if "repeatCell" in r])  # 숫자·시각 서식은 매번
     pay_col = layout.a1_to_grid(f"{layout.CARDS}!J{cards.FIRST}:J{cards.LAST}")  # 카드 결제 계좌 드롭다운 (운영 카드 표 자리 기준, 매번 같은 규칙)
     card_pay = [r for r in cards.formats() if "setDataValidation" in r and r["setDataValidation"]["range"] == pay_col]
-    return (look + _theme(s) + kinds + card_pay + budget_reco.validation_requests() + fmts + dash + chart_moves(s.charts, s.dash_base) + invest.polish_requests()
+    mode_pick = [r for r in broker_positions.formats() if "setDataValidation" in r
+                 and r["setDataValidation"]["range"] == layout.a1_to_grid(f"{layout.BROKER_POS}!{layout.POS_MODE}")]  # 반영 방식 드롭다운(기존 탭에도)
+    return (look + _theme(s) + kinds + card_pay + mode_pick + budget_reco.validation_requests() + fmts + dash + chart_moves(s.charts, s.dash_base) + invest.polish_requests()
             + _widths() + styling.asset_align_requests() + networth_axis_fix(s.networth_chart)
             + [r for r in asset_status.formats() + sigol_tabs.formats() if "repeatCell" in r]  # 숫자 서식은 매번(자리 옮김 반영)
             + breakdown.style_requests(s.dash_base) + category_bars.style_requests(s.dash_base) + _readability(s)

@@ -100,6 +100,24 @@ function replaceAccountRows(table, account, positions) {
   return kept.concat(positions.map(function (p) { return [account, p.code, p.name, p.qty, p.cost, p.value, p.currency]; }));
 }
 
+// 같은 계좌의 같은 종목(코드가 같거나 이름이 같음)은 새 값으로 갱신하고, 없는 종목은 줄을 더한다. 붙여넣지 않은 종목은 그대로 둔다.
+function mergeAccountRows(table, account, positions) {
+  var acct = String(account).trim();
+  var rows = table.filter(function (r) { return !isBlank(r[0]); }).map(function (r) { return r.slice(); });
+  var norm = function (x) { return String(isBlank(x) ? '' : x).trim().toLowerCase(); };
+  positions.forEach(function (p) {
+    var at = -1;
+    for (var i = 0; i < rows.length && at < 0; i++) {
+      var r = rows[i];
+      if (String(r[0]).trim() !== acct) continue;
+      if ((norm(p.code) && norm(p.code) === norm(r[1])) || norm(p.name) === norm(r[2])) at = i;
+    }
+    if (at >= 0) rows[at] = [acct, p.code || rows[at][1], p.name, p.qty, p.cost, p.value, p.currency];
+    else rows.push([acct, p.code, p.name, p.qty, p.cost, p.value, p.currency]);
+  });
+  return rows;
+}
+
 function renameAccountRows(table, from, to) {
   return table.map(function (r) { return String(r[0]).trim() === String(from).trim() ? [to].concat(r.slice(1)) : r; });
 }

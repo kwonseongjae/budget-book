@@ -13,7 +13,7 @@ INVEST, KIS_RAW, INVEST_LOG = "투자", "한투원본", "투자기록"
 KIS_HOLD = "한투종목"  # 한투 ISA 종목 목록: 신랑 A:E, 신부 G:K (apps-script/kis.gs KIS_HOLD_COL)
 # 다증권사(A단계): 계좌 목록·붙여넣기 — 주소는 apps-script/positions.gs와 같아야 한다 (tests/test_broker_tabs.py가 대조)
 BROKER_ACCTS, BROKER_POS = "증권계좌", "증권종목"
-POS_ACCOUNT, POS_CHECK, POS_RESULT = "B2", "B3", "C3"
+POS_ACCOUNT, POS_CHECK, POS_RESULT, POS_MODE = "B2", "B3", "C3", "B4"
 POS_PASTE, POS_TABLE = "A6:T205", "A2:G1001"
 POS_TABLE_TAB = "증권종목표"  # 정규 종목 표(숨김) — 붙여넣기 칸 옆에 두면 넓은 표가 덮어쓴다
 ACCT_NAMES, ACCT_PASTED = "A5:A14", "F5:F14"

@@ -68,7 +68,7 @@ def test_second_run_adds_nothing_duplicable_and_keeps_budgets():
     # 검증은 자산 종류 선택지만 매번 다시 씀 (같은 규칙 덮어쓰기라 반복 안전)
     # 매번 다시 거는 것: 자산 종류 선택지 + 결제수단(대출·연금·기타 제외)·입금자산 선택지 + 월 이동 드롭다운(대시보드·부부 C1), 추천 예산 체크박스(설정 J12)
     assert [r["setDataValidation"]["range"] for r in structure if "setDataValidation" in r] == [
-        layout.a1_to_grid(a1) for a1 in ("내역!B2:B5000", "내역!C2:C5000", "내역!F2:F5000", "내역!G2:G5000", "내역!I2:I5000", "자산!A2:A50", "자산!B2:B50", "반복!F2:F50", "즐겨찾기!E2:E50", "대시보드!C1", "부부!C1", "추이!C1", "카드!J5:J24", "설정!J12")]
+        layout.a1_to_grid(a1) for a1 in ("내역!B2:B5000", "내역!C2:C5000", "내역!F2:F5000", "내역!G2:G5000", "내역!I2:I5000", "자산!A2:A50", "자산!B2:B50", "반복!F2:F50", "즐겨찾기!E2:E50", "대시보드!C1", "부부!C1", "추이!C1", "카드!J5:J24", "증권종목!B4", "설정!J12")]
     assert not {"addChart", "addConditionalFormatRule"} & set(_kinds(visual))  # 사용법 서식만 다시
     ranges = set(_values(values))
     assert not any(r.startswith("설정!K2") or r == "설정!C2:C60" for r in ranges)

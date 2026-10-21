@@ -5,6 +5,7 @@ var POS_TABLE_TAB = '증권종목표';
 var ACCT_TAB = '증권계좌';
 var POS_ACCOUNT = 'B2';
 var POS_CHECK = 'B3';
+var POS_MODE = 'B4';
 var POS_RESULT = 'C3';
 var POS_PASTE = 'A6:T205';
 var POS_TABLE = 'A2:G1001';
@@ -44,7 +45,10 @@ function importPositions(ss, checkbox) {
     return;
   }
   var tbl = ss.getSheetByName(POS_TABLE_TAB);
-  var rows = replaceAccountRows(tbl.getRange(POS_TABLE).getValues(), account, r.positions);
+  var mode = String(sh.getRange(POS_MODE).getValue() || '').trim();       // 비우거나 '추가·갱신 (기본)' = 합치기, '전체 교체' = 이 계좌를 표로 바꾸기
+  var replaceAll = mode.indexOf('교체') !== -1;
+  var current = tbl.getRange(POS_TABLE).getValues();
+  var rows = replaceAll ? replaceAccountRows(current, account, r.positions) : mergeAccountRows(current, account, r.positions);
   if (rows.length > 1000) { out.setValue('✗ 종목이 너무 많습니다 (전체 1000줄까지).'); return; }
   tbl.getRange(POS_TABLE).setValues(rows.concat(blankRows_(1000 - rows.length, 7)));
   list.getRange(5 + at, 6).setValue(todayDate());
@@ -52,8 +56,10 @@ function importPositions(ss, checkbox) {
   if (r.failed.length) {
     sh.getRange(6, 1, r.failed.length, 6).setValues(r.failed.map(function (t) { return [safeText(t), '', '', '', '', '인식 실패']; }));
   }
-  var chartOk = refreshAccountChart_(ss, account, r.positions.length);
-  out.setValue('✓ ' + r.positions.length + '종목 반영' + (r.failed.length ? ' / 실패 ' + r.failed.length + '줄' : '')
+  var total = rows.filter(function (x) { return String(x[0]).trim() === account; }).length;
+  var chartOk = refreshAccountChart_(ss, account, total);
+  out.setValue('✓ ' + r.positions.length + '종목 반영' + (total !== r.positions.length ? ' · 계좌 전체 ' + total + '종목' : '')
+    + (r.failed.length ? ' / 실패 ' + r.failed.length + '줄' : '')
     + (chartOk ? '' : ' / 그래프는 만들지 못했습니다'));
 }
 
