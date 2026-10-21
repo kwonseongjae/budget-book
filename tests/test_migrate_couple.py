@@ -27,7 +27,7 @@ def test_live_sheet_renames_adds_tabs_and_columns():
     renames = {r["updateSheetProperties"]["properties"].get("title") for r in structure if "updateSheetProperties" in r}
     assert {"주식_신랑", "메리츠_신랑"} <= renames
     added = sorted(r["addSheet"]["properties"]["title"] for r in structure if "addSheet" in r)
-    assert added == sorted(["부부", "자산기록", "주식_신부", "메리츠_신부", "메리츠원본2", "투자", "한투원본", "투자기록", "자산현황", "고정지출", "카드", "주식투자", "저축·연금", "한투종목", "시작하기", "빠른입력"])
+    assert added == sorted(["부부", "자산기록", "주식_신부", "메리츠_신부", "메리츠원본2", "투자", "한투원본", "투자기록", "자산현황", "고정지출", "카드", "주식투자", "저축·연금", "한투종목", "시작하기", "빠른입력", "증권계좌", "증권종목"])
     assert {"appendDimension": {"sheetId": 200, "dimension": "COLUMNS", "length": 3}} in structure
     assert {"appendDimension": {"sheetId": 300, "dimension": "COLUMNS", "length": 4}} in structure
     assert "addProtectedRange" in _kinds(structure) and "setDataValidation" in _kinds(structure)

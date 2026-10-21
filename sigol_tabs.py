@@ -3,6 +3,8 @@
 S(탭 이름) TITLE SECTIONS HEADS TOTALS SUBTOTALS BODIES INPUTS RUNS BADGE WIDTHS HIDDEN, values() formats() chart_requests()
 """
 import cards
+import broker_accounts
+import broker_positions
 import checklist
 import fixed_costs
 import quick_entry
@@ -10,7 +12,7 @@ import savings
 import stock_sectors
 from layout import SHEET_ID, _protect, a1_to_grid
 
-MODULES = [checklist, quick_entry, fixed_costs, cards, stock_sectors, savings]
+MODULES = [checklist, quick_entry, fixed_costs, cards, stock_sectors, savings, broker_accounts, broker_positions]
 NAMES = [m.S for m in MODULES]
 
 

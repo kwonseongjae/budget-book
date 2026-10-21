@@ -6,7 +6,7 @@ import deploy_script
 
 def test_script_files_manifest_and_sources():
     files = {f["name"]: f for f in deploy_script.script_files()}
-    assert set(files) == {"appsscript", "logic", "triggers", "meritz_logic", "meritz", "kis_logic", "kis", "invest_logic"}
+    assert set(files) == {"appsscript", "logic", "triggers", "meritz_logic", "meritz", "kis_logic", "kis", "invest_logic", "positions_logic", "positions"}
     manifest = json.loads(files["appsscript"]["source"])
     assert manifest["timeZone"] == "Asia/Seoul"
     assert manifest["runtimeVersion"] == "V8"
@@ -74,7 +74,7 @@ def test_securities_menu_refresh_and_daily_invest_record():
     assert "recordInvest(ss);" in _fn(files["triggers"], "dailyJob")
     assert "'주식_신랑'" in files["triggers"] and "'주식_신부'" in files["triggers"]  # 상세 탭은 다시 숨기기 대상
     assert [f["name"] for f in deploy_script.script_files()][1:] == [
-        "logic", "triggers", "meritz_logic", "meritz", "kis_logic", "kis", "invest_logic"]
+        "logic", "triggers", "meritz_logic", "meritz", "kis_logic", "kis", "invest_logic", "positions_logic", "positions"]
 
 
 def test_diagnose_menu_reports_each_step_without_revealing_keys():

@@ -16,7 +16,7 @@ SCRIPT_DIR = ROOT / "apps-script"
 SPREADSHEET_ID_FILE = ROOT / ".spreadsheet_id"
 SCRIPT_ID_FILE = ROOT / ".script_id"
 MANIFEST = {"timeZone": "Asia/Seoul", "exceptionLogging": "STACKDRIVER", "runtimeVersion": "V8"}
-SOURCES = ["logic", "triggers", "meritz_logic", "meritz", "kis_logic", "kis", "invest_logic"]
+SOURCES = ["logic", "triggers", "meritz_logic", "meritz", "kis_logic", "kis", "invest_logic", "positions_logic", "positions"]
 
 
 def script_files() -> list[dict]:

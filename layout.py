@@ -11,6 +11,12 @@ RAW, STOCK, MERITZ = "메리츠원본", nm("주식_신랑"), nm("메리츠_신�
 RAW2, STOCK2, MERITZ2 = "메리츠원본2", nm("주식_신부"), nm("메리츠_신부")
 INVEST, KIS_RAW, INVEST_LOG = "투자", "한투원본", "투자기록"
 KIS_HOLD = "한투종목"  # 한투 ISA 종목 목록: 신랑 A:E, 신부 G:K (apps-script/kis.gs KIS_HOLD_COL)
+# 다증권사(A단계): 계좌 목록·붙여넣기 — 주소는 apps-script/positions.gs와 같아야 한다 (tests/test_broker_tabs.py가 대조)
+BROKER_ACCTS, BROKER_POS = "증권계좌", "증권종목"
+POS_ACCOUNT, POS_CHECK, POS_RESULT = "B2", "B3", "C3"
+POS_PASTE, POS_TABLE = "A6:F205", "H6:N1005"
+ACCT_NAMES, ACCT_PASTED = "A5:A14", "F5:F14"
+ACCOUNT_TAB_PREFIX = "계좌_"
 COUPLE, NETWORTH = "부부", "자산기록"
 ASSET_STATUS = "자산현황"
 FIXED, CARDS, STOCKS, SAVINGS = "고정지출", "카드", "주식투자", "저축·연금"  # 시골쥐 기능 시트
@@ -48,6 +54,8 @@ SHEETS = [
     (TREND, 500, 80, 26, False),
     (NETWORTH, 1800, 200, 12, False),  # 차트를 F열에 두므로 12열
     (INVEST, 1900, 100, 10, False),
+    (BROKER_ACCTS, 2800, 40, 9, False),
+    (BROKER_POS, 2810, 1010, 14, False),
     (CAL, 600, 20, 7, False),
     (SEARCH, 700, 1000, 10, False),
     (STOCK, 1500, 120, 16, False),
