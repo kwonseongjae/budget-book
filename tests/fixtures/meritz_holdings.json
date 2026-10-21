@@ -1,0 +1,9 @@
+{"data":[
+{"iscd":"A005930","isnm":"삼성전자","pros_trgt_cls_code":"1","mksc_cls_name":"주식일반","rmnd_qty":10,"rmnd_dqty":"0.5000000000","byng_unpr":"67047.62","psnt_prc":"75000.000000","vltn_amt":787500,"vltn_prls_amt":83500,"ert":"11.86080","byng_amt":704000,"loan_amt":0},
+{"iscd":"A005930","isnm":"삼성전자","pros_trgt_cls_code":"1","mksc_cls_name":"신용","rmnd_qty":5,"rmnd_dqty":"0.0000000000","byng_unpr":"70000.00","psnt_prc":"75000.000000","vltn_amt":375000,"vltn_prls_amt":25000,"ert":"7.14286","byng_amt":350000,"loan_amt":300000},
+{"iscd":"MU.OQ","isnm":"마이크론","pros_trgt_cls_code":"J","mksc_cls_name":"해외주식","rmnd_qty":10,"rmnd_dqty":"0.0000000000","byng_unpr":"95.00","psnt_prc":"100.000000","vltn_amt":1400000,"vltn_prls_amt":100000,"ert":"7.69231","byng_amt":1300000,"loan_amt":0},
+{"iscd":"MU.OQ","isnm":"마이크론","pros_trgt_cls_code":"J","mksc_cls_name":"해외주식","rmnd_qty":0,"rmnd_dqty":"1.0000000000","byng_unpr":"95.00","psnt_prc":"100.000000","vltn_amt":140000,"vltn_prls_amt":10000,"ert":"7.69231","byng_amt":130000,"loan_amt":0},
+{"iscd":"TSLA.OQ","isnm":"테슬라","pros_trgt_cls_code":"J","mksc_cls_name":"해외주식","rmnd_qty":3,"rmnd_dqty":"0.0000000000","byng_unpr":"150.00","psnt_prc":"135.000000","vltn_amt":540000,"vltn_prls_amt":-60000,"ert":"-10.00000","byng_amt":600000,"loan_amt":0},
+{"iscd":"X001","isnm":"Super365 발행어음","pros_trgt_cls_code":"D","mksc_cls_name":"주식일반","rmnd_qty":2000,"rmnd_dqty":"0.0000000000","byng_unpr":"1000.00","psnt_prc":"1005.000000","vltn_amt":2010000,"vltn_prls_amt":10000,"ert":"0.50000","byng_amt":2000000,"loan_amt":0},
+{"iscd":"A000660","isnm":"SK하이닉스","pros_trgt_cls_code":"1","mksc_cls_name":"주식일반","rmnd_qty":0,"rmnd_dqty":"0.0000000000","byng_unpr":"0.00","psnt_prc":"200000.000000","vltn_amt":0,"vltn_prls_amt":0,"ert":"0.00000","byng_amt":0,"loan_amt":0}
+],"rsp_cd":"5766","rsp_msg":"조회가 완료되었습니다.","tr_cont":"1"}

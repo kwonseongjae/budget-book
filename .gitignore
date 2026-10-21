@@ -1,0 +1,16 @@
+token.json
+client_secret*.json
+.env
+__pycache__/
+.spreadsheet_id
+.script_id
+.superpowers/
+tools/
+메리츠.txt
+*.key
+.old/
+*.pem
+token*.json
+*snapshot*.json
+docs/private/
+.names

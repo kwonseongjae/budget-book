@@ -1,0 +1,5 @@
+{"data":[
+{"prod_cls_name":"일반","rmnd_clcd":"1","crcd":"USD","iscd":"MU.OQ","isnm":"MICRON TECHNOLOGY","rmnd_dqty":"10.0000000000","avrg_unpr":"95.000000","vltn_prls_camt":"50.0000","vltn_ert":"5.2632","psnt_prc":"100.000000","byov_camt":"950.0000","frcr_vltn_amt":"1000.000","exrt":"1400.0000","ovrs_stck_symb_iscd":"MU"},
+{"prod_cls_name":"소수","rmnd_clcd":"2","crcd":"USD","iscd":"MU.OQ","isnm":"MICRON TECHNOLOGY","rmnd_dqty":"1.0000000000","avrg_unpr":"95.000000","vltn_prls_camt":"5.0000","vltn_ert":"5.2632","psnt_prc":"100.000000","byov_camt":"95.0000","frcr_vltn_amt":"100.000","exrt":"1400.0000","ovrs_stck_symb_iscd":"MU"},
+{"prod_cls_name":"일반","rmnd_clcd":"1","crcd":"USD","iscd":"AAPL.OQ","isnm":"APPLE INC","rmnd_dqty":"2.0000000000","avrg_unpr":"190.000000","vltn_prls_camt":"20.0000","vltn_ert":"5.2632","psnt_prc":"200.000000","byov_camt":"380.0000","frcr_vltn_amt":"400.000","exrt":"1400.0000","ovrs_stck_symb_iscd":"AAPL"}
+],"rsp_cd":"5766","rsp_msg":"조회가 완료되었습니다.","tr_cont":"0"}
