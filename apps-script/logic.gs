@@ -69,6 +69,12 @@ function routeEdit(ev) {
     return YEAR_MOVES.indexOf(ev.value) !== -1 ? { type: 'year', choice: ev.value } : null;
   }
   if (ev.sheet === '설정' && ev.row === 12 && ev.col === 10) return ev.value === 'TRUE' ? { type: 'budget' } : null;  // 추천 예산 채우기
+  if (ev.sheet === '증권종목' && ev.row === 3 && ev.col === 2) return ev.value === 'TRUE' ? { type: 'positions' } : null;  // 붙여넣기 반영
+  if (ev.sheet === '증권계좌' && ev.col === 1 && ev.row >= 5 && ev.row <= 14) {  // 계좌 이름 → 계좌 탭 생성·이름 변경·숨김
+    var accFrom = isBlank(ev.oldValue) ? '' : String(ev.oldValue).trim();
+    var accTo = isBlank(ev.value) ? '' : String(ev.value).trim();
+    return accFrom === accTo ? null : { type: 'brokerTab', from: accFrom, to: accTo };
+  }
   if (ev.sheet === '빠른입력' && ev.row === 13 && ev.col === 2) {  // 폰 빠른 입력: 맨 아래 '추가' 체크
     return ev.value === 'TRUE' ? { type: 'quick' } : null;
   }

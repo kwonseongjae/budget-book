@@ -16,6 +16,8 @@ function onEdit(e) {
   if (action.type === 'quick') addQuick(e.source, range);
   if (action.type === 'budget') fillBudgets(e.source, range);
   if (action.type === 'year') moveYear(e.source, action.choice);
+  if (action.type === 'positions') importPositions(e.source, range);
+  if (action.type === 'brokerTab') syncAccountTab(e.source, action.from, action.to);
   if (action.type === 'month') moveMonth(e.source, action.sheet, action.choice);
   if (action.type === 'memo') applyMemoSuggest(e.source, action.row);
   if (action.type === 'rate') applyRates(e.source, action.row, action.row, action.overwrite);

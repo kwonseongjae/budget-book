@@ -42,3 +42,55 @@ function importPositions(ss, checkbox) {
   }
   out.setValue('✓ ' + r.positions.length + '종목 반영' + (r.failed.length ? ' / 실패 ' + r.failed.length + '줄' : ''));
 }
+
+// 증권계좌 A5:A14 편집 → 그 계좌의 탭을 만들거나(없으면) 보이게/이름 바꾸기/숨기기. 반환값은 처리 결과(테스트·토스트용).
+function syncAccountTab(ss, from, to) {
+  var problem = to ? validAccountName(to) : '';
+  if (problem) { if (ss.toast) ss.toast(problem, '증권계좌', 8); return 'invalid'; }
+  if (!to) {
+    var old = from ? ss.getSheetByName(ACCOUNT_TAB_PREFIX + from) : null;
+    if (!old) return 'none';
+    old.hideSheet();                       // 기록 보존을 위해 삭제하지 않는다
+    return 'hidden';
+  }
+  var target = ss.getSheetByName(ACCOUNT_TAB_PREFIX + to);
+  if (!from) {
+    if (target) { target.showSheet(); return 'shown'; }
+    buildAccountTab_(ss.insertSheet(ACCOUNT_TAB_PREFIX + to), to);
+    return 'created';
+  }
+  var oldTab = ss.getSheetByName(ACCOUNT_TAB_PREFIX + from);
+  if (!oldTab) {
+    if (target) { target.showSheet(); return 'shown'; }
+    buildAccountTab_(ss.insertSheet(ACCOUNT_TAB_PREFIX + to), to);
+    return 'created';
+  }
+  if (target) { if (ss.toast) ss.toast('같은 이름의 계좌 탭이 이미 있습니다.', '증권계좌', 8); return 'exists'; }
+  oldTab.setName(ACCOUNT_TAB_PREFIX + to);
+  oldTab.getRange('B1').setValue(to);
+  var pos = ss.getSheetByName(POS_TAB);
+  if (pos) pos.getRange(POS_TABLE).setValues(renameAccountRows(pos.getRange(POS_TABLE).getValues(), from, to));
+  return 'renamed';
+}
+
+// 계좌 탭: B1 = 계좌 이름(수식이 이 칸을 읽는다), 요약 B2:B9, 종목 표 A11:F(필터), 오른쪽에 종목 비중 원형 그래프.
+function buildAccountTab_(sh, name) {
+  var T = '증권종목', L = '증권계좌';
+  var find = function (col) { return 'IFERROR(INDEX(' + L + '!$' + col + '$5:$' + col + '$14,MATCH($B$1,' + L + '!$A$5:$A$14,0)),"")'; };
+  var sum = function (col) { return '=SUMIFS(' + T + '!$' + col + '$6:$' + col + '$1005,' + T + '!$H$6:$H$1005,$B$1)'; };
+  sh.getRange('A1:B1').setValues([['계좌', name]]);
+  sh.getRange('A2:A9').setValues([['소유자 · 증권사'], ['종목 평가'], ['원금 (매입금액)'], ['예수금'], ['평가금액 (총)'], ['손익 (종목 기준)'], ['수익률'], ['마지막 붙여넣기']]);
+  sh.getRange('B2:B9').setFormulas([
+    ['=' + find('B') + '&" · "&' + find('C')], [sum('M')], [sum('L')], ['=N(' + find('E') + ')'], ['=B3+B5'],
+    ['=B3-B4'], ['=IF(B4>0,B7/B4,"")'], ['=' + find('F')]]);
+  sh.getRange('A11:F11').setValues([['코드', '종목명', '수량', '매입금액', '평가금액', '통화']]);
+  sh.getRange('A12').setFormula('=IFERROR(FILTER(' + T + '!$I$6:$N$1005,' + T + '!$H$6:$H$1005=$B$1),"")');
+  sh.getRange('B3:B7').setNumberFormat('#,##0');
+  sh.getRange('B9').setNumberFormat('yyyy-mm-dd');
+  sh.getRange('B8').setNumberFormat('0.0%');
+  sh.getRange('D12:E61').setNumberFormat('#,##0');
+  if (typeof sh.newChart === 'function' && typeof Charts !== 'undefined') {
+    sh.insertChart(sh.newChart().setChartType(Charts.ChartType.PIE).addRange(sh.getRange('B12:B61')).addRange(sh.getRange('E12:E61'))
+      .setPosition(2, 8, 0, 0).setOption('title', '종목별 비중').build());
+  }
+}
