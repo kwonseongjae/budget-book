@@ -76,3 +76,12 @@ def test_live_migration_adds_both_tabs_once():
     assert {"증권계좌!A4:G4", "증권종목!H5:N5"} <= {e["range"] for e in values}
     again = mc.plan(_state())[0]
     assert not {layout.BROKER_ACCTS, layout.BROKER_POS} & {r["addSheet"]["properties"]["title"] for r in again if "addSheet" in r}
+
+
+def test_guide_explains_paste_flow_and_auto_tab():
+    import guide
+    rows = {a: b for _k, a, b in guide.CONTENT}
+    assert "계좌_" in rows["[증권계좌]"] and "자동" in rows["[증권계좌]"]
+    assert "머리글" in rows["[증권종목]"] and "B3" in rows["[증권종목]"] and "교체" in rows["[증권종목]"]
+    tab_map = " ".join(b for k, a, b in guide.CONTENT if a == "투자")
+    assert "[증권계좌]" in tab_map
