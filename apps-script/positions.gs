@@ -52,7 +52,26 @@ function importPositions(ss, checkbox) {
   if (r.failed.length) {
     sh.getRange(6, 1, r.failed.length, 6).setValues(r.failed.map(function (t) { return [safeText(t), '', '', '', '', '인식 실패']; }));
   }
-  out.setValue('✓ ' + r.positions.length + '종목 반영' + (r.failed.length ? ' / 실패 ' + r.failed.length + '줄' : ''));
+  var chartOk = refreshAccountChart_(ss, account, r.positions.length);
+  out.setValue('✓ ' + r.positions.length + '종목 반영' + (r.failed.length ? ' / 실패 ' + r.failed.length + '줄' : '')
+    + (chartOk ? '' : ' / 그래프는 만들지 못했습니다'));
+}
+
+// 계좌 탭의 종목별 비중 원형 그래프를 지우고 현재 종목 수(최대 50)에 맞춰 다시 만든다. 탭이 없으면 먼저 만든다.
+// 차트 API를 쓸 수 없는 환경이면 건너뛰고 true, 만들다 실패하면 false(종목 반영은 이미 끝난 뒤라 막지 않는다).
+function refreshAccountChart_(ss, account, count) {
+  try {
+    var sh = ss.getSheetByName(ACCOUNT_TAB_PREFIX + account);
+    if (!sh) { syncAccountTab(ss, '', account, null); sh = ss.getSheetByName(ACCOUNT_TAB_PREFIX + account); }
+    if (!sh || typeof sh.newChart !== 'function' || typeof Charts === 'undefined') return true;
+    sh.getCharts().forEach(function (c) { sh.removeChart(c); });
+    var end = 11 + Math.min(count, 50);
+    sh.insertChart(sh.newChart().setChartType(Charts.ChartType.PIE).addRange(sh.getRange('B12:B' + end)).addRange(sh.getRange('E12:E' + end))
+      .setPosition(2, 8, 0, 0).setOption('title', '종목별 비중').setOption('pieSliceText', 'percentage').build());
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 // 증권계좌 A5:A14 편집 → 그 계좌의 탭을 만들거나(없으면) 보이게/이름 바꾸기/숨기기. 반환값은 처리 결과(테스트·토스트용).
@@ -118,8 +137,4 @@ function buildAccountTab_(sh, name) {
   sh.getRange('B9').setNumberFormat('yyyy-mm-dd');
   sh.getRange('B8').setNumberFormat('0.0%');
   sh.getRange('D12:E61').setNumberFormat('#,##0');
-  if (typeof sh.newChart === 'function' && typeof Charts !== 'undefined') {
-    sh.insertChart(sh.newChart().setChartType(Charts.ChartType.PIE).addRange(sh.getRange('B12:B61')).addRange(sh.getRange('E12:E61'))
-      .setPosition(2, 8, 0, 0).setOption('title', '종목별 비중').build());
-  }
 }

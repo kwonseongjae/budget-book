@@ -22,7 +22,7 @@ function setup() {
     return checkbox;
   };
   const table = () => tbl.getRange('A2:G1001').getValues().filter((r) => r[0] !== '');
-  return { ctx, pos, tbl, acct, paste, table, result: () => pos.get(3, 3) };
+  return { ctx, ss, pos, tbl, acct, paste, table, result: () => pos.get(3, 3) };
 }
 
 const HEAD = ['종목명', '수량', '매입금액', '평가금액'];
@@ -104,4 +104,64 @@ test('importPositions: 계좌 이름이 숫자로 저장된 줄도 같은 계좌
   t.tbl.set(2, 1, 1);                                                  // 시트가 숫자로 바꿔 저장한 모양
   t.paste('1', [HEAD, ['C', 2, 300, 330]]);
   assert.deepEqual(t.table().map((r) => r[2]), ['C']);
+});
+
+// ---- 반영하면 계좌 탭에 종목별 비중 원형 그래프 (실제 SpreadsheetApp 차트 API를 흉내) ----
+function chartProbe(t, account) {
+  const charts = [], calls = [];
+  t.ctx.Charts = { ChartType: { PIE: 'PIE' } };
+  const tab = t.ss.insertSheet('계좌_' + account);
+  const getRange = tab.getRange.bind(tab);
+  tab.getRange = (a, b, c, d) => Object.assign(getRange(a, b, c, d), { a1: a });
+  tab.newChart = () => {
+    const spec = { ranges: [], options: {} };
+    const b = { setChartType: (x) => { spec.type = x; return b; }, addRange: (r) => { spec.ranges.push(r.a1); return b; },
+      setPosition: (...p) => { spec.position = p; return b; }, setOption: (k, v) => { spec.options[k] = v; return b; }, build: () => spec };
+    return b;
+  };
+  tab.getCharts = () => charts.slice();
+  tab.removeChart = (c) => { calls.push('remove'); charts.splice(charts.indexOf(c), 1); };
+  tab.insertChart = (c) => { calls.push('insert'); charts.push(c); };
+  return { charts, calls };
+}
+
+test('importPositions: 반영하면 계좌 탭에 종목명·평가금액 원형 그래프가 들어가고, 다시 반영하면 교체된다', () => {
+  const t = setup();
+  const probe = chartProbe(t, '신랑 키움');
+  t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110], ['B', 2, 200, 190]]);
+  assert.equal(probe.charts.length, 1);
+  assert.deepEqual([probe.charts[0].type, probe.charts[0].ranges], ['PIE', ['B12:B13', 'E12:E13']]);
+  t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110], ['B', 2, 200, 190], ['C', 3, 300, 330]]);
+  assert.equal(probe.charts.length, 1);                                       // 옛 그래프는 지우고 새로
+  assert.deepEqual(probe.charts[0].ranges, ['B12:B14', 'E12:E14']);
+  assert.match(t.result(), /^✓ 3종목 반영$/);
+});
+
+test('importPositions: 종목이 50개를 넘어도 그래프는 50개까지, 반영이 거부되면 그래프는 그대로', () => {
+  const t = setup();
+  const probe = chartProbe(t, '신랑 키움');
+  const many = Array.from({ length: 60 }, (_, i) => ['S' + i, 1, 10, 11]);
+  t.paste('신랑 키움', [HEAD].concat(many));
+  assert.deepEqual(probe.charts[0].ranges, ['B12:B61', 'E12:E61']);
+  t.paste('신랑 키움', [['foo', 'bar'], ['1', '2']]);                          // 머리글 없음 → 거부
+  assert.equal(probe.charts.length, 1);
+});
+
+test('importPositions: 계좌 탭이 아직 없으면 만들어서 그래프까지 넣는다', () => {
+  const t = setup();
+  t.ctx.Charts = { ChartType: { PIE: 'PIE' } };
+  t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110]]);
+  assert.ok(t.ss.getSheetByName('계좌_신랑 키움'));
+  assert.match(t.result(), /^✓ 1종목 반영/);
+});
+
+test('importPositions: 그래프를 못 만들어도 종목 반영은 되고 결과에 알린다', () => {
+  const t = setup();
+  const probe = chartProbe(t, '신랑 키움');
+  const tab = t.ss.getSheetByName('계좌_신랑 키움');
+  tab.insertChart = () => { throw new Error('boom'); };
+  t.paste('신랑 키움', [HEAD, ['A', 1, 100, 110]]);
+  assert.equal(t.table().length, 1);
+  assert.match(t.result(), /그래프는 만들지 못/);
+  assert.equal(probe.charts.length, 0);
 });
