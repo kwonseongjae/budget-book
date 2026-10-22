@@ -39,35 +39,36 @@ class Slot(NamedTuple):
 
 MERITZ_SLOTS = [Slot(RAW, STOCK, MERITZ, GROOM), Slot(RAW2, STOCK2, MERITZ2, BRIDE)]
 
-# (제목, sheetId, 행, 열, 숨김) — 이 순서대로 탭이 생긴다
+# (제목, sheetId, 행, 열, 숨김) — 이 순서대로 탭이 생긴다.
+# 왼쪽: 일주일 단위로 쓰는 탭 → 오른쪽: 달 1~2회 쓰는 탭(설정·자산·사용법) → 그 뒤는 숨겨 두고 PC 메뉴 '가계부 → 탭 열기'로 꺼내는 탭(TUCKED) → 내부용 숨김 탭
 SHEETS = [
-    (GUIDE, 1300, 120, 2, False),
-    (CHECKLIST, 2600, 40, 6, False),
+    (DASH, 400, 190, 14, False),  # 고정비·변동비(95~145) + 분류별 막대그래프(147~)
     (QUICK, 2700, 40, 4, False),
     (TXN, 100, 5000, 14, False),  # N 적용 환율(입력 시점 환율, 스크립트가 채움)
-    (DASH, 400, 190, 14, False),  # 고정비·변동비(95~145) + 분류별 막대그래프(147~)
+    (SMS, 1000, 500, 3, False),
+    (FAV, 900, 50, 7, False),
+    (COUPLE, 1700, 60, 11, False),
+    (INVEST, 1900, 100, 10, False),
     (ASSET_STATUS, 2100, 90, 16, False),  # 81~85행 월별 저축률 가로형 표  # K열: 부채 표 대출명 선택지(숨은 보조 열)
+    (SETTINGS, 200, 60, 13, False),
+    (ASSETS, 300, 50, 12, False),  # J 통화·K 외화 잔액(달러통장 등), L 결제수단 목록(숨은 보조 열)
+    (GUIDE, 1300, 120, 2, False),
+    (CHECKLIST, 2600, 40, 6, False),
+    (RECUR, 800, 50, 14, False),  # J:M 고정지출 상세(전체 금액·금리·만기·비고), N 통화
     (FIXED, 2200, 60, 16, False),
     (CARDS, 2300, 60, 16, False),
-    (STOCKS, 2400, 150, 28, False),
     (SAVINGS, 2500, 60, 16, False),
-    (COUPLE, 1700, 60, 11, False),
-    (TREND, 500, 80, 26, False),
+    (STOCKS, 2400, 150, 28, False),
     (NETWORTH, 1800, 200, 12, False),  # 차트를 F열에 두므로 12열
-    (INVEST, 1900, 100, 10, False),
     (BROKER_ACCTS, 2800, 40, 9, False),
     (BROKER_POS, 2810, 1010, 20, False),
+    (TREND, 500, 80, 26, False),
     (CAL, 600, 20, 7, False),
     (SEARCH, 700, 1000, 10, False),
     (STOCK, 1500, 120, 16, False),
     (MERITZ, 1600, 100, 8, False),
     (STOCK2, 1550, 120, 16, False),
     (MERITZ2, 1650, 100, 8, False),
-    (FAV, 900, 50, 7, False),
-    (RECUR, 800, 50, 14, False),  # J:M 고정지출 상세(전체 금액·금리·만기·비고), N 통화
-    (SMS, 1000, 500, 3, False),
-    (ASSETS, 300, 50, 12, False),  # J 통화·K 외화 잔액(달러통장 등), L 결제수단 목록(숨은 보조 열)
-    (SETTINGS, 200, 60, 13, False),
     (CALC, 1100, 200, 16, True),
     (STATE, 1200, 500, 2, True),
     (RAW, 1400, 110, 14, True),
@@ -79,7 +80,8 @@ SHEETS = [
 ]
 SHEET_ID = {title: sid for title, sid, *_ in SHEETS}
 # 자주 안 쓰는 보기 탭: 처음엔 숨겨 두고 PC 메뉴 '가계부'로 꺼낸다 (SHEETS의 hidden은 사람이 안 보는 내부 탭)
-TUCKED = {TREND, CAL, SEARCH, STOCK, MERITZ, STOCK2, MERITZ2}
+TUCKED = {TREND, CAL, SEARCH, STOCK, MERITZ, STOCK2, MERITZ2,
+          CHECKLIST, RECUR, FIXED, CARDS, SAVINGS, STOCKS, NETWORTH, BROKER_ACCTS, BROKER_POS}
 # [자산] G열 연동 값 → [투자] 탭 그 계좌의 행 (평가 B열, 마지막 갱신 F열)
 INVEST_ACCOUNTS = [(nm("메리츠_신랑"), 7), (nm("한투ISA_신랑"), 8), (nm("메리츠_신부"), 10), (nm("한투ISA_신부"), 11)]
 

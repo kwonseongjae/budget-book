@@ -105,10 +105,9 @@ def test_unregistered_payment_method_highlighted():
 def test_rarely_used_view_tabs_start_hidden_but_keep_styling():
     import styling
     body = {s["properties"]["title"]: s["properties"]["hidden"] for s in layout.create_body("t")["sheets"]}
-    tucked = {"추이", "달력", "검색", "주식_신랑", "메리츠_신랑", "메리츠_신부", "주식_신부"}
+    tucked = set(layout.TUCKED)
     assert {t for t, h in body.items() if h} == tucked | {"계산", "알림기록", "메리츠원본", "메리츠원본2", "한투원본", "투자기록", "한투종목", "증권종목표"}
-    assert {t for t, h in body.items() if not h} == {"사용법", "시작하기", "빠른입력", "내역", "대시보드", "자산현황", "고정지출", "카드", "주식투자", "저축·연금", "부부", "자산기록", "투자", "증권계좌", "증권종목",
-                                                     "즐겨찾기", "반복", "문자입력", "자산", "설정"}
+    assert {t for t, h in body.items() if not h} == set(["대시보드", "빠른입력", "내역", "문자입력", "즐겨찾기", "부부", "투자", "자산현황", "설정", "자산", "사용법"])
     styled = {r["updateSheetProperties"]["properties"]["sheetId"] for r in styling.base_requests()
               if "tabColor" in r.get("updateSheetProperties", {}).get("properties", {})}
     assert {layout.SHEET_ID[t] for t in tucked} <= styled  # 숨겨도 꺼내 보면 같은 모양

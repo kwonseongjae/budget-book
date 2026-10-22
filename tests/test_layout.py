@@ -26,7 +26,7 @@ def test_create_body_tabs_locale_and_unique_ids():
     assert body["properties"]["locale"] == "ko_KR"
     assert body["properties"]["timeZone"] == "Asia/Seoul"
     props = [s["properties"] for s in body["sheets"]]
-    assert [p["title"] for p in props][:4] == ["사용법", "시작하기", "빠른입력", "내역"]
+    assert [p["title"] for p in props][:4] == ["대시보드", "빠른입력", "내역", "문자입력"]
     assert len({p["sheetId"] for p in props}) == len(props)
     hidden = {p["title"] for p in props if p["hidden"]}
     assert hidden == {"계산", "알림기록", "메리츠원본", "메리츠원본2", "한투원본", "투자기록", "한투종목", "증권종목표"} | layout.TUCKED

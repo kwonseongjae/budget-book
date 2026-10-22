@@ -24,9 +24,9 @@ def _rule(a1):
     return _validations()[tuple(sorted(layout.a1_to_grid(f"빠른입력!{a1}").items()))]
 
 
-def test_tab_after_checklist_with_input_tab_color_and_no_badge():
+def test_quick_tab_second_with_input_tab_color_and_no_badge():
     titles = [t for t, *_ in layout.SHEETS]
-    assert titles[titles.index(layout.CHECKLIST) + 1] == layout.QUICK == "빠른입력" and SID == 2700
+    assert titles[1] == layout.QUICK == "빠른입력" and SID == 2700   # 자주 쓰는 입력 탭이라 대시보드 바로 다음
     assert quick_entry in sigol_tabs.MODULES and layout.QUICK not in theme.BADGES
     assert styling.TAB_COLORS[layout.QUICK] == styling.INPUT_TAB
 

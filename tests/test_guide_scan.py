@@ -29,8 +29,8 @@ def test_tab_map_section_near_top_lists_every_group():
     kinds = [(k, a) for k, a, _b in guide.CONTENT]
     i = kinds.index(("section", "탭 한눈에 보기"))
     assert i < 14
-    labels = [a for k, a, _b in guide.CONTENT[i + 1:i + 7] if k == "row"]
-    assert labels == ["입력", "보기", "투자", "관리", "숨김"]
+    labels = [a for k, a, _b in guide.CONTENT[i + 1:i + 4] if k == "row"]
+    assert labels == ["왼쪽 (자주)", "오른쪽 (가끔)", "메뉴로 열기"]
 
 
 def test_invest_row_uses_current_principal_definition():

@@ -62,17 +62,31 @@ function applyMemoSuggest(ss, row) {
   refreshCategoryRules(ss, '내역', TYPE_COLS['내역'], row, 1);
 }
 
-// 자주 안 쓰는 보기 탭은 숨겨 두고 PC 메뉴로 꺼낸다 (폰 앱엔 메뉴가 없지만 폰은 내역·대시보드·투자 위주).
-var TUCKED_VIEWS = ['추이', '달력', '검색', '주식_신랑', '메리츠_신랑', '주식_신부', '메리츠_신부'];
+// 자주 안 쓰는 탭(일주일에 한 번도 안 쓰는 것)은 숨겨 두고 PC 메뉴 '가계부 → 탭 열기'로 꺼낸다 (폰 앱엔 메뉴가 없지만 폰은 빠른입력·내역·대시보드 위주).
+// 이 목록은 layout.py의 TUCKED와 같아야 한다 (tests/test_tab_layout.py가 대조).
+var TUCKED_VIEWS = ['시작하기', '반복', '고정지출', '카드', '저축·연금', '주식투자', '자산기록', '증권계좌', '증권종목',
+  '추이', '달력', '검색', '주식_신랑', '메리츠_신랑', '주식_신부', '메리츠_신부'];
 
 function addViewMenu_() {
-  SpreadsheetApp.getUi().createMenu('가계부')
-    .addItem('추이 (연간 그래프) 열기', 'openTrend')
-    .addItem('달력 열기', 'openCalendar')
-    .addItem('검색 열기', 'openSearch')
-    .addSeparator()
-    .addItem('내 주식 탭 열기', 'openMyStock')
-    .addItem('내 메리츠 상세 열기', 'openMyMeritz')
+  var ui = SpreadsheetApp.getUi();
+  ui.createMenu('가계부')
+    .addSubMenu(ui.createMenu('탭 열기')
+      .addItem('시작하기 (체크리스트)', 'openChecklist')
+      .addItem('반복 (고정지출 등록)', 'openRecurring')
+      .addItem('고정지출', 'openFixed')
+      .addItem('카드', 'openCards')
+      .addItem('저축·연금', 'openSavings')
+      .addItem('주식투자', 'openStocks')
+      .addItem('자산기록', 'openNetworth')
+      .addSeparator()
+      .addItem('추이 (연간 그래프)', 'openTrend')
+      .addItem('달력', 'openCalendar')
+      .addItem('검색', 'openSearch')
+      .addSeparator()
+      .addItem('증권계좌', 'openBrokerAccounts')
+      .addItem('증권종목 (붙여넣기)', 'openBrokerPositions')
+      .addItem('내 주식 탭', 'openMyStock')
+      .addItem('내 메리츠 상세', 'openMyMeritz'))
     .addSeparator()
     .addItem('꺼낸 탭 다시 숨기기', 'tuckViews')
     .addToUi();
@@ -86,6 +100,15 @@ function showTab_(name) {
   ss.setActiveSheet(sh);
 }
 
+function openChecklist() { showTab_('시작하기'); }
+function openRecurring() { showTab_('반복'); }
+function openFixed() { showTab_('고정지출'); }
+function openCards() { showTab_('카드'); }
+function openSavings() { showTab_('저축·연금'); }
+function openStocks() { showTab_('주식투자'); }
+function openNetworth() { showTab_('자산기록'); }
+function openBrokerAccounts() { showTab_('증권계좌'); }
+function openBrokerPositions() { showTab_('증권종목'); }
 function openTrend() { showTab_('추이'); }
 function openCalendar() { showTab_('달력'); }
 function openSearch() { showTab_('검색'); }

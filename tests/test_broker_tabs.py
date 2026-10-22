@@ -32,8 +32,8 @@ def test_addresses_match_the_script():
 
 def test_tabs_follow_invest_and_have_input_color():
     titles = [t for t, *_ in layout.SHEETS]
-    i = titles.index(layout.INVEST)
-    assert titles[i + 1:i + 3] == [layout.BROKER_ACCTS, layout.BROKER_POS]
+    i = titles.index(layout.BROKER_ACCTS)
+    assert titles[i + 1] == layout.BROKER_POS and {layout.BROKER_ACCTS, layout.BROKER_POS} <= layout.TUCKED   # 메뉴 '탭 열기'로 꺼내는 탭
     assert (layout.SHEET_ID[layout.BROKER_ACCTS], layout.SHEET_ID[layout.BROKER_POS]) == (2800, 2810)
     assert broker_accounts in sigol_tabs.MODULES and broker_positions in sigol_tabs.MODULES
     assert styling.TAB_COLORS[layout.BROKER_ACCTS] == styling.INPUT_TAB == styling.TAB_COLORS[layout.BROKER_POS]
@@ -107,5 +107,5 @@ def test_guide_explains_paste_flow_and_auto_tab():
     rows = {a: b for _k, a, b in guide.CONTENT}
     assert "계좌_" in rows["[증권계좌]"] and "자동" in rows["[증권계좌]"]
     assert "머리글" in rows["[증권종목]"] and "B3" in rows["[증권종목]"] and "교체" in rows["[증권종목]"] and "추가" in rows["[증권종목]"]
-    tab_map = " ".join(b for k, a, b in guide.CONTENT if a == "투자")
+    tab_map = " ".join(b for k, a, b in guide.CONTENT if a == "메뉴로 열기")
     assert "[증권계좌]" in tab_map

@@ -17,9 +17,11 @@ def _props(reqs):
     return [r["updateSheetProperties"]["properties"] for r in reqs if "updateSheetProperties" in r]
 
 
-def test_guide_is_first_tab():
+def test_dashboard_is_first_tab_and_guide_is_last_visible():
     titles = [s["properties"]["title"] for s in layout.create_body("t")["sheets"]]
-    assert titles[:4] == ["사용법", "시작하기", "빠른입력", "내역"]  # 시작하기는 사용법 바로 다음
+    assert titles[:4] == ["대시보드", "빠른입력", "내역", "문자입력"]  # 자주 쓰는 탭이 왼쪽 (2026-10-22)
+    visible = [s["properties"]["title"] for s in layout.create_body("t")["sheets"] if not s["properties"]["hidden"]]
+    assert visible[-1] == "사용법"
 
 
 def test_users_are_couple_names_plus_shared():
