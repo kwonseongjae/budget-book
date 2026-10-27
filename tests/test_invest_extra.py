@@ -73,3 +73,11 @@ def test_row13_formats_applied_every_run_with_red_gain_blue_loss_number_format()
     pct = [r["repeatCell"]["cell"]["userEnteredFormat"]["numberFormat"]["pattern"] for r in structure
            if "repeatCell" in r and r["repeatCell"]["range"] == layout.a1_to_grid("투자!E13")]
     assert pct == ["[Red]0.0%;[Blue]-0.0%;0.0%"]
+
+
+def test_guide_explains_extra_row_and_first_day_jump():
+    import guide
+    text = " ".join(b for _k, a, b in guide.CONTENT if a == "[투자]")
+    assert "기타 증권사" in text and "붙여넣기" in text
+    assert "처음" in text and "전일 대비" in text            # 붙여넣기 계좌가 생긴 첫날 전일 대비가 뛴다
+    assert "투자기록" in text
