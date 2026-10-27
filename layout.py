@@ -10,6 +10,7 @@ GUIDE = "사용법"
 RAW, STOCK, MERITZ = "메리츠원본", nm("주식_신랑"), nm("메리츠_신랑")
 RAW2, STOCK2, MERITZ2 = "메리츠원본2", nm("주식_신부"), nm("메리츠_신부")
 INVEST, KIS_RAW, INVEST_LOG = "투자", "한투원본", "투자기록"
+INVEST_LOG_DETAIL = "투자기록_계좌"  # 붙여넣기 계좌별 기록(날짜|계좌|평가|원금), 숨김
 KIS_HOLD = "한투종목"  # 한투 ISA 종목 목록: 신랑 A:E, 신부 G:K (apps-script/kis.gs KIS_HOLD_COL)
 # 다증권사(A단계): 계좌 목록·붙여넣기 — 주소는 apps-script/positions.gs와 같아야 한다 (tests/test_broker_tabs.py가 대조)
 BROKER_ACCTS, BROKER_POS = "증권계좌", "증권종목"
@@ -60,7 +61,7 @@ SHEETS = [
     (SAVINGS, 2500, 60, 16, False),
     (STOCKS, 2400, 150, 28, False),
     (NETWORTH, 1800, 200, 12, False),  # 차트를 F열에 두므로 12열
-    (BROKER_ACCTS, 2800, 40, 9, False),
+    (BROKER_ACCTS, 2800, 40, 12, False),
     (BROKER_POS, 2810, 1010, 20, False),
     (TREND, 500, 80, 26, False),
     (CAL, 600, 20, 7, False),
@@ -74,9 +75,10 @@ SHEETS = [
     (RAW, 1400, 110, 14, True),
     (RAW2, 1450, 110, 14, True),
     (KIS_RAW, 1950, 3, 7, True),
-    (INVEST_LOG, 2000, 1000, 12, True),
+    (INVEST_LOG, 2000, 1000, 14, True),  # M 기타 평가 · N 기타 원금
     (KIS_HOLD, 1960, 101, 11, True),
     (POS_TABLE_TAB, 2820, 1010, 7, True),
+    (INVEST_LOG_DETAIL, 2830, 5000, 4, True),
 ]
 SHEET_ID = {title: sid for title, sid, *_ in SHEETS}
 # 자주 안 쓰는 보기 탭: 처음엔 숨겨 두고 PC 메뉴 '가계부'로 꺼낸다 (SHEETS의 hidden은 사람이 안 보는 내부 탭)

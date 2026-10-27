@@ -12,7 +12,7 @@ def test_invest_tabs_defined_visible_and_hidden():
     props = {t: (sid, rows, cols, hidden) for t, sid, rows, cols, hidden in layout.SHEETS}
     assert props["투자"] == (1900, 100, 10, False)
     assert props["한투원본"] == (1950, 3, 7, True)
-    assert props["투자기록"] == (2000, 1000, 12, True)
+    assert props["투자기록"] == (2000, 1000, 14, True)
     assert "주식_신랑" in layout.TUCKED
     visible = [s["properties"]["title"] for s in layout.create_body("t")["sheets"] if not s["properties"]["hidden"]]
     assert visible == ["대시보드", "빠른입력", "내역", "문자입력", "즐겨찾기", "부부", "투자", "자산현황", "설정", "자산", "사용법"]
@@ -68,7 +68,7 @@ def test_raw_and_log_headers():
     vals = _by_range(invest.invest_values())
     assert vals["한투원본!A1:G1"][0] == ["사람", "상태", "코드", "메시지", "마지막 성공", "평가금액", "원금"]
     assert vals["한투원본!A2:A3"] == [["신랑"], ["신부"]]
-    assert len(vals["투자기록!A1:L1"][0]) == 12
+    assert len(vals["투자기록!A1:N1"][0]) == 14
 
 
 def test_asset_sync_reads_invest_tab_for_all_four_accounts():

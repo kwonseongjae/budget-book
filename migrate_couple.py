@@ -39,7 +39,8 @@ from layout import (ASSET_STATUS, ASSETS, COUPLE, DASH, GUIDE, INVEST, INVEST_LO
 
 NEW_TABS = (COUPLE, NETWORTH, STOCK2, MERITZ2, RAW2)
 INVEST_TABS = (INVEST, KIS_RAW, INVEST_LOG)
-HOLD_TABS = (layout.KIS_HOLD, layout.POS_TABLE_TAB)
+HOLD_TABS = (layout.KIS_HOLD, layout.POS_TABLE_TAB, layout.INVEST_LOG_DETAIL)
+GROW_COLS = (layout.BROKER_POS, layout.BROKER_ACCTS, layout.INVEST_LOG)  # 처음 만든 뒤 열이 늘어난 기존 탭
 STATUS_TABS = (ASSET_STATUS,)
 SIGOL_TABS = tuple(sigol_tabs.NAMES)
 RENAMES = {"주식": STOCK, "메리츠": MERITZ}
@@ -158,10 +159,11 @@ def _structure(s: State) -> list[dict]:
     sid_ = SHEET_ID[layout.STOCKS]
     if layout.STOCKS in s.titles and have_rows < stock_rows:  # 섹터 지정·합산 상위 10 표가 내려간 자리
         reqs.append({"appendDimension": {"sheetId": sid_, "dimension": "ROWS", "length": stock_rows - have_rows}})
-    pos_cols = next(c for t, _s, _r, c, _h in SHEETS if t == layout.BROKER_POS)
-    have_pos = (s.grid or {}).get(SHEET_ID[layout.BROKER_POS], (0, pos_cols))[1]
-    if layout.BROKER_POS in s.titles and have_pos < pos_cols:  # 붙여넣기 칸 A:T (처음엔 14열로 만들어졌다)
-        reqs.append({"appendDimension": {"sheetId": SHEET_ID[layout.BROKER_POS], "dimension": "COLUMNS", "length": pos_cols - have_pos}})
+    for tab in GROW_COLS:  # 처음 만들 때보다 열이 늘어난 기존 탭 (붙여넣기 칸 A:T, 증권계좌 H:L, 투자기록 M:N)
+        want = next(c for t, _s, _r, c, _h in SHEETS if t == tab)
+        have = (s.grid or {}).get(SHEET_ID[tab], (0, want))[1]
+        if tab in s.titles and have < want:
+            reqs.append({"appendDimension": {"sheetId": SHEET_ID[tab], "dimension": "COLUMNS", "length": want - have}})
     if layout.STOCKS in s.titles and have_stock < stock_cols:  # 사람별 그래프 원본(숨김 U~AB) 자리
         reqs.append({"appendDimension": {"sheetId": sid_, "dimension": "COLUMNS", "length": stock_cols - have_stock}})
         reqs.append({"updateDimensionProperties": {"range": {"sheetId": sid_, "dimension": "COLUMNS",
@@ -500,7 +502,7 @@ def _grown(grid):
     if not grid:
         return grid
     out = dict(grid)
-    for tab in (layout.STOCKS, layout.BROKER_POS):
+    for tab in (layout.STOCKS, *GROW_COLS):
         if SHEET_ID[tab] in out:
             rows, cols = next((r, c) for t, _s, r, c, _h in SHEETS if t == tab)
             have = out[SHEET_ID[tab]]

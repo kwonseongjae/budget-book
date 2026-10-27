@@ -505,12 +505,22 @@ function recordInvest(ss) {
   if (!tab || !log) return;
   var vals = tab.getRange(1, 2, 12, 2).getValues(); // B1:C12 — 계좌 행의 평가·원금
   var pairs = INVEST_ACCOUNT_ROWS.map(function (r) { return vals[r - 1]; });
+  var list = ss.getSheetByName('증권계좌');
+  var extras = list ? extraAccounts(list.getRange('A5:K14').getValues()) : [];   // 붙여넣기 계좌 (총평가가 숫자인 것만)
   var date = yesterday(todayDate());
-  var row = investLogRow(date, pairs);
+  var row = withExtras(investLogRow(date, pairs), extras);
   if (!shouldRecordInvest(row)) return;
   var at = dateRowIndex(log.getRange(1, 1, log.getMaxRows(), 1).getValues(), date);
   if (at > log.getMaxRows()) log.insertRowsAfter(log.getMaxRows(), 365);
   log.getRange(at, 1, 1, INVEST_LOG_COLS).setValues([row]);
+  var detail = ss.getSheetByName('투자기록_계좌');
+  if (detail && extras.length) {
+    var last = nextEmptyRow(detail.getRange(1, 1, detail.getMaxRows(), 1).getValues()) - 1;
+    var existing = last >= 2 ? detail.getRange(2, 1, last - 1, 4).getValues() : [];
+    var rows = upsertAccountLog(existing, accountLogRows(date, extras));
+    if (rows.length + 1 > detail.getMaxRows()) detail.insertRowsAfter(detail.getMaxRows(), 1000);
+    detail.getRange(2, 1, rows.length, 4).setValues(rows);
+  }
 }
 
 // 시트 소유자가 1회 직접 실행: 확장 프로그램 > Apps Script > setupTriggers ▶ 실행 → 권한 허용

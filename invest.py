@@ -1,7 +1,7 @@
 """투자 탭(부부 주식 계좌 4개 합산·증감·추이)과 숨김 탭 한투원본·투자기록의 값·서식·차트."""
 from charts import _basic, _chart
 from names import localize as nm
-from layout import INVEST, INVEST_LOG, KIS_HOLD, KIS_RAW, RAW, RAW2, SHEET_ID, a1_to_grid, number_format, v
+from layout import INVEST, INVEST_LOG, INVEST_LOG_DETAIL, KIS_HOLD, KIS_RAW, RAW, RAW2, SHEET_ID, a1_to_grid, number_format, v
 from meritz_style import _sign_rule
 from styling import (BLUE_TEXT, CHECK_BG, HEADER_FONT, KPI_FONT, KPI_ROW_PX, LABEL_BG, RED_TEXT, SECTION_FONT, TITLE_FONT,
                      TITLE_ROW_PX, VIEW_TAB, WHITE,
@@ -48,7 +48,7 @@ KPI_HEAD = ["부부 합산 평가금액", "투자원금", "평가손익", "수�
 TABLE_HEAD = ["계좌", "평가금액", "원금", "손익", "수익률", "마지막 갱신", "상태", "직접입력 평가", "직접입력 원금"]
 CASH_HEAD = "현금(예수금)"  # J열: 평가금액(총자산) − 종목 평가. 손익·수익률은 현금을 뺀 종목 기준
 LOG_HEAD = ["날짜", nm("신랑 메리츠 평가"), "원금", nm("신랑 ISA 평가"), "원금", nm("신부 메리츠 평가"), "원금",
-            nm("신부 ISA 평가"), "원금", "합계 평가", "합계 원금", "빠진 계좌 수"]
+            nm("신부 ISA 평가"), "원금", "합계 평가", "합계 원금", "빠진 계좌 수", "기타 평가", "기타 원금"]
 HOLD_HEAD = ["코드", "종목명", "매입금액", "평가금액"]  # 한투종목 탭 (구분 다음 열들)
 KIS_HEAD = ["사람", "상태", "코드", "메시지", "마지막 성공", "평가금액", "원금"]
 CHART_ROWS, CHART_COLS = (21, 21), (0, 4)  # 그래프 자리(0부터): 한눈에 표(14~20행) 아래 나란히 — 40행 추이 표를 덮지 않게
@@ -152,7 +152,7 @@ def invest_values() -> list[dict]:
     return (out + _overview() + _trend_tables()
             # 머리글·사람 이름만: B2:G3은 스크립트가 쓰는 결과라 재실행 때 지우면 안 된다
             + [v(f"{KIS_RAW}!A1:G1", [KIS_HEAD]), v(f"{KIS_RAW}!A2:A3", [[nm("신랑")], [nm("신부")]]),
-               v(f"{L}!A1:L1", [LOG_HEAD]),
+               v(f"{L}!A1:N1", [LOG_HEAD]), v(f"{INVEST_LOG_DETAIL}!A1:D1", [["날짜", "계좌", "평가", "원금"]]),
                v(f"{KIS_HOLD}!A1:K1", [[nm("신랑 구분"), *HOLD_HEAD, "", nm("신부 구분"), *HOLD_HEAD]])])
 
 
@@ -166,7 +166,8 @@ def structure_requests() -> list[dict]:
             (f"{INVEST}!B41:C100", "NUMBER", "#,##0"), (f"{INVEST}!E41:E100", "DATE", "m/d"),
             (f"{INVEST}!F41:F100", "NUMBER", "#,##0"), (f"{KIS_RAW}!E2:E3", "DATE_TIME", "yyyy-mm-dd hh:mm"),
             (f"{KIS_RAW}!F2:G3", "NUMBER", "#,##0"), (f"{L}!A2:A1000", "DATE", "yyyy-mm-dd"),
-            (f"{L}!B2:K1000", "NUMBER", "#,##0"), (f"{INVEST}!B16:D20", "NUMBER", "#,##0"),
+            (f"{L}!B2:K1000", "NUMBER", "#,##0"), (f"{L}!M2:N1000", "NUMBER", "#,##0"),
+            (f"{INVEST_LOG_DETAIL}!A2:A5000", "DATE", "yyyy-mm-dd"), (f"{INVEST_LOG_DETAIL}!C2:D5000", "NUMBER", "#,##0"), (f"{INVEST}!B16:D20", "NUMBER", "#,##0"),
             (f"{INVEST}!I16:I19", "NUMBER", "#,##0")]
     return [check] + [number_format(a1, kind, pattern) for a1, kind, pattern in fmts]
 
