@@ -1,7 +1,8 @@
 /* 투자 탭 순수 로직 (node --test 대상). 기록은 06시 일일 작업 한 곳에서만 쓴다. */
 
 var INVEST_ACCOUNT_ROWS = [7, 8, 10, 11]; // [투자] 계좌 행: 신랑 메리츠, 신랑 ISA, 신부 메리츠, 신부 ISA
-var INVEST_LOG_COLS = 12;
+var INVEST_LOG_COLS = 14;      // A 날짜 · B~I 4계좌(평가,원금) · J 합계 평가 · K 합계 원금 · L 빠진 계좌 수 · M 기타 평가 · N 기타 원금
+var INVEST_LOG_MISSING = 11;   // L열(0부터 11)
 
 function dayStart(d) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -41,7 +42,46 @@ function dateRowIndex(colA, date) {
   return nextEmptyRow(colA);
 }
 
-// 계좌 4개가 모두 빈 날(키 넣기 전 등)은 기록하지 않는다 — 0원 줄이 추이 그래프와 전일 대비를 망친다.
+// 4계좌가 모두 빈 날(키 넣기 전 등)은 기록하지 않는다 — 0원 줄이 추이 그래프와 전일 대비를 망친다. 기타(붙여넣기) 계좌가 있으면 기록한다.
 function shouldRecordInvest(row) {
-  return row[INVEST_LOG_COLS - 1] < INVEST_ACCOUNT_ROWS.length;
+  return row[INVEST_LOG_MISSING] < INVEST_ACCOUNT_ROWS.length || (row.length > 12 && isNum(row[12]));
+}
+
+// 증권계좌 A5:K14 줄 → 총평가(J)가 숫자인 계좌 [{name, value, principal}] (원금 I가 숫자가 아니면 '')
+function extraAccounts(rows) {
+  var out = [];
+  rows.forEach(function (r) {
+    var name = isBlank(r[0]) ? '' : String(r[0]).trim();
+    if (name && isNum(r[9])) out.push({ name: name, value: r[9], principal: isNum(r[8]) ? r[8] : '' });
+  });
+  return out;
+}
+
+// 4계좌 기록 줄(12열)에 기타 증권사 계좌를 더해 14열로: 합계(J·K)에 포함하고 M·N에 기타 합계를 따로 남긴다. 기타가 없으면 M·N은 빈칸.
+function withExtras(row, extras) {
+  var out = row.slice(0, 12);
+  if (!extras.length) return out.concat(['', '']);
+  var v = 0, p = 0, hasP = false;
+  extras.forEach(function (e) {
+    v += e.value;
+    if (e.principal !== '') { p += e.principal; hasP = true; }
+  });
+  out[9] += v;
+  out[10] += p;
+  return out.concat([v, hasP ? p : '']);
+}
+
+function accountLogRows(date, extras) {
+  return extras.map(function (e) { return [date, e.name, e.value, e.principal]; });
+}
+
+// 투자기록_계좌(날짜|계좌|평가|원금): 같은 날짜+계좌는 새 값으로 교체하고 나머지는 유지한다. 날짜가 아닌 줄(빈 줄)은 버린다.
+function upsertAccountLog(existing, rows) {
+  var key = function (d, n) { return dayStart(d).getTime() + '|' + n; };
+  var fresh = {};
+  rows.forEach(function (r) { fresh[key(r[0], r[1])] = true; });
+  var kept = existing.filter(function (r) {
+    return Object.prototype.toString.call(r[0]) === '[object Date]' && !fresh[key(r[0], r[1])];
+  });
+  return kept.concat(rows);
 }
