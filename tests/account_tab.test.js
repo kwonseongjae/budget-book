@@ -35,7 +35,7 @@ test('손익·수익률은 모든 종목에 매입금액이 있을 때만 (원�
   t.names('A');
   t.ctx.syncAccountTab(t.ss, '', 'A', 5);
   const sh = t.tab('A');
-  assert.match(sh.get(7, 2), /^=IF\(COUNTIFS\(증권종목표!\$A\$2:\$A\$1001,\$B\$1,증권종목표!\$D\$2:\$D\$1001,""\)>0,"",B3-B4\)$/);
+  assert.match(sh.get(7, 2), /^=IF\(COUNTIFS\(증권종목표!\$A\$2:\$A\$1001,\$B\$1,증권종목표!\$E\$2:\$E\$1001,""\)>0,"",B3-B4\)$/);
   assert.match(sh.get(8, 2), /^=IF\(AND\(ISNUMBER\(B7\),B4>0\),B7\/B4,""\)$/);
 });
 

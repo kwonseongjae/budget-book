@@ -135,7 +135,7 @@ function buildAccountTab_(sh, name) {
   sh.getRange('A2:A9').setValues([['소유자 · 증권사'], ['종목 평가'], ['원금 (매입금액)'], ['예수금'], ['평가금액 (총)'], ['손익 (종목 기준)'], ['수익률'], ['마지막 붙여넣기']]);
   sh.getRange('B2:B9').setFormulas([
     ['=' + find('B') + '&" · "&' + find('C')], [sum('F')], [sum('E')], ['=N(' + find('E') + ')'], ['=B3+B5'],
-    ['=IF(COUNTIFS(' + T + '!$A$2:$A$1001,$B$1,' + T + '!$D$2:$D$1001,"")>0,"",B3-B4)'],      // 매입금액이 빈 종목이 있으면 손익을 비운다
+    ['=IF(COUNTIFS(' + T + '!$A$2:$A$1001,$B$1,' + T + '!$E$2:$E$1001,"")>0,"",B3-B4)'],      // 매입금액이 빈 종목이 있으면 손익을 비운다
     ['=IF(AND(ISNUMBER(B7),B4>0),B7/B4,"")'], ['=' + find('F')]]);
   sh.getRange('A11:F11').setValues([['코드', '종목명', '수량', '매입금액', '평가금액', '통화']]);
   sh.getRange('A12').setFormula('=IFERROR(FILTER(' + T + '!$B$2:$G$1001,' + T + '!$A$2:$A$1001=$B$1),"")');
