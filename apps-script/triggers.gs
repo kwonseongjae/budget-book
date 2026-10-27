@@ -509,17 +509,20 @@ function recordInvest(ss) {
   var extras = list ? extraAccounts(list.getRange('A5:K14').getValues()) : [];   // 붙여넣기 계좌 (총평가가 숫자인 것만)
   var date = yesterday(todayDate());
   var row = withExtras(investLogRow(date, pairs), extras);
-  if (!shouldRecordInvest(row)) return;
+  var lastLog = nextEmptyRow(log.getRange(1, 1, log.getMaxRows(), 1).getValues()) - 1;
+  var prevRow = lastLog >= 2 ? prevLogRow(log.getRange(2, 1, lastLog - 1, INVEST_LOG_COLS).getValues(), date) : null;
+  if (!shouldRecordInvest(row, prevRow)) return;
   var at = dateRowIndex(log.getRange(1, 1, log.getMaxRows(), 1).getValues(), date);
   if (at > log.getMaxRows()) log.insertRowsAfter(log.getMaxRows(), 365);
   log.getRange(at, 1, 1, INVEST_LOG_COLS).setValues([row]);
   var detail = ss.getSheetByName('투자기록_계좌');
-  if (detail && extras.length) {
+  if (detail) {                                   // 기타 계좌가 없어도 그날 줄을 비워 낡은 줄이 남지 않게
     var last = nextEmptyRow(detail.getRange(1, 1, detail.getMaxRows(), 1).getValues()) - 1;
     var existing = last >= 2 ? detail.getRange(2, 1, last - 1, 4).getValues() : [];
-    var rows = upsertAccountLog(existing, accountLogRows(date, extras));
+    var rows = upsertAccountLog(existing, accountLogRows(date, extras), date);
     if (rows.length + 1 > detail.getMaxRows()) detail.insertRowsAfter(detail.getMaxRows(), 1000);
-    detail.getRange(2, 1, rows.length, 4).setValues(rows);
+    if (rows.length) detail.getRange(2, 1, rows.length, 4).setValues(rows);
+    if (existing.length > rows.length) detail.getRange(2 + rows.length, 1, existing.length - rows.length, 4).clearContent();
   }
 }
 

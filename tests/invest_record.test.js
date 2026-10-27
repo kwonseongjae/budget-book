@@ -55,3 +55,32 @@ test('recordInvest: 4계좌가 모두 비어도 기타 계좌만 있으면 기�
   none.ctx.recordInvest(none.ss);
   assert.equal(none.log.get(2, 1), '');
 });
+
+test('recordInvest: 4계좌가 일시적으로 모두 빠진 날은 기타 계좌만으로 기록하지 않는다 (합계 급락 방지)', () => {
+  const t = setup([acct('신랑 키움', 800, 900)]);
+  t.ctx.recordInvest(t.ss);                                                      // 10-21: 4계좌 일부 값 있음 → 기록
+  t.ctx.todayDate = () => new Date(2026, 9, 23);                                 // 10-22 기록 시도
+  [7, 10].forEach((r) => { t.ss.getSheetByName('투자').set(r, 2, ''); t.ss.getSheetByName('투자').set(r, 3, ''); });
+  t.ctx.recordInvest(t.ss);
+  assert.equal(t.log.get(3, 1), '');
+});
+
+test('recordInvest: 붙여넣기 계좌만 쓰는 사용자(직전 기록도 4계좌 없음)는 계속 기록된다', () => {
+  const t = setup([acct('신랑 키움', 800, 900)]);
+  [7, 10].forEach((r) => { t.ss.getSheetByName('투자').set(r, 2, ''); t.ss.getSheetByName('투자').set(r, 3, ''); });
+  t.ctx.recordInvest(t.ss);
+  t.ctx.todayDate = () => new Date(2026, 9, 23);
+  t.ctx.recordInvest(t.ss);
+  assert.notEqual(t.log.get(3, 1), '');
+});
+
+test('recordInvest: 계좌 이름을 바꾸고 같은 날 다시 돌려도 계좌별 줄은 하나, 기타 계좌가 사라지면 그날 줄이 지워진다', () => {
+  const t = setup([acct('키움', 800, 900)]);
+  t.ctx.recordInvest(t.ss);
+  t.list.set(5, 1, '신랑 키움');
+  t.ctx.recordInvest(t.ss);
+  assert.deepEqual(plain(t.detail.getRange('B2:B3').getValues()), [['신랑 키움'], ['']]);
+  t.list.set(5, 1, '');
+  t.ctx.recordInvest(t.ss);
+  assert.equal(t.detail.get(2, 1), '');                                          // 줄어든 꼬리는 지워진다
+});

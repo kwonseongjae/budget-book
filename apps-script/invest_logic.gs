@@ -42,9 +42,21 @@ function dateRowIndex(colA, date) {
   return nextEmptyRow(colA);
 }
 
-// 4계좌가 모두 빈 날(키 넣기 전 등)은 기록하지 않는다 — 0원 줄이 추이 그래프와 전일 대비를 망친다. 기타(붙여넣기) 계좌가 있으면 기록한다.
-function shouldRecordInvest(row) {
-  return row[INVEST_LOG_MISSING] < INVEST_ACCOUNT_ROWS.length || (row.length > 12 && isNum(row[12]));
+// 4계좌가 모두 빈 날(키 넣기 전 등)은 기록하지 않는다 — 0원 줄이 추이 그래프와 전일 대비를 망친다.
+// 기타(붙여넣기) 계좌만 있는 날은 기록하되, 직전 기록에는 4계좌 값이 있었다면(키 오류 등 일시 장애) 기록하지 않는다 — 합계가 기타 계좌만큼으로 급락하는 것을 막는다.
+function shouldRecordInvest(row, prevRow) {
+  if (row[INVEST_LOG_MISSING] < INVEST_ACCOUNT_ROWS.length) return true;
+  if (!(row.length > 12 && isNum(row[12]))) return false;
+  return !(prevRow && isNum(prevRow[INVEST_LOG_MISSING]) && prevRow[INVEST_LOG_MISSING] < INVEST_ACCOUNT_ROWS.length);
+}
+
+// 투자기록 값(2행부터)에서 date보다 앞선 날짜의 마지막 줄. 없으면 null.
+function prevLogRow(values, date) {
+  var key = dayStart(date).getTime(), found = null;
+  values.forEach(function (r) {
+    if (Object.prototype.toString.call(r[0]) === '[object Date]' && dayStart(r[0]).getTime() < key) found = r;
+  });
+  return found;
 }
 
 // 증권계좌 A5:K14 줄 → 총평가(J)가 숫자인 계좌 [{name, value, principal}] (원금 I가 숫자가 아니면 '')
@@ -75,13 +87,12 @@ function accountLogRows(date, extras) {
   return extras.map(function (e) { return [date, e.name, e.value, e.principal]; });
 }
 
-// 투자기록_계좌(날짜|계좌|평가|원금): 같은 날짜+계좌는 새 값으로 교체하고 나머지는 유지한다. 날짜가 아닌 줄(빈 줄)은 버린다.
-function upsertAccountLog(existing, rows) {
-  var key = function (d, n) { return dayStart(d).getTime() + '|' + n; };
-  var fresh = {};
-  rows.forEach(function (r) { fresh[key(r[0], r[1])] = true; });
+// 투자기록_계좌(날짜|계좌|평가|원금): date(그날)의 줄은 이름과 상관없이 전부 새 줄로 바꾸고 다른 날짜는 유지한다.
+// (같은 날 다시 실행해도, 계좌 이름을 바꾸거나 계좌가 사라져도 낡은 줄이 남지 않는다.) 날짜가 아닌 줄(빈 줄)은 버린다.
+function upsertAccountLog(existing, rows, date) {
+  var key = dayStart(date).getTime();
   var kept = existing.filter(function (r) {
-    return Object.prototype.toString.call(r[0]) === '[object Date]' && !fresh[key(r[0], r[1])];
+    return Object.prototype.toString.call(r[0]) === '[object Date]' && dayStart(r[0]).getTime() !== key;
   });
   return kept.concat(rows);
 }

@@ -70,7 +70,7 @@ def test_securities_menu_refresh_and_daily_invest_record():
     assert "clearKisKeys_();" in _fn(files["meritz"], "clearMeritzKeys")
     assert "'투자'" in _fn(files["meritz"], "onEditMeritz")
     assert "principalOf" not in files["meritz"] + files["meritz_logic"]  # 원금은 시트 수식이 종목 블록에서
-    assert "if (!shouldRecordInvest(row)) return;" in _fn(files["triggers"], "recordInvest")
+    assert "if (!shouldRecordInvest(row, prevRow)) return;" in _fn(files["triggers"], "recordInvest")
     assert "recordInvest(ss);" in _fn(files["triggers"], "dailyJob")
     assert "'주식_신랑'" in files["triggers"] and "'주식_신부'" in files["triggers"]  # 상세 탭은 다시 숨기기 대상
     assert [f["name"] for f in deploy_script.script_files()][1:] == [

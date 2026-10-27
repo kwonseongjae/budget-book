@@ -71,9 +71,34 @@ test('shouldRecordInvest: 4계좌가 모두 비어도 기타 계좌가 있으면
   assert.equal(ctx.shouldRecordInvest(ctx.withExtras(ctx.investLogRow(d, [[1, 1], ['', ''], ['', ''], ['', '']]), [])), true);
 });
 
-test('upsertAccountLog: 같은 날짜+계좌는 교체, 다른 날짜·계좌는 유지, 날짜가 아닌 줄은 버림', () => {
+test('upsertAccountLog: 그날 줄은 이름과 상관없이 전부 교체, 다른 날짜는 유지, 날짜가 아닌 줄은 버림', () => {
   const d1 = new Date(2026, 9, 11), d2 = new Date(2026, 9, 12, 6, 3);
   const existing = [[d1, 'a', 1, 1], [new Date(2026, 9, 12), 'a', 2, 2], [new Date(2026, 9, 12), 'b', 3, 3], ['', '', '', '']];
-  const out = ctx.upsertAccountLog(existing, ctx.accountLogRows(d2, [{ name: 'a', value: 9, principal: 8 }]));
-  assert.deepEqual(plain(out).map((r) => [r[1], r[2]]), [['a', 1], ['b', 3], ['a', 9]]);
+  const out = ctx.upsertAccountLog(existing, ctx.accountLogRows(d2, [{ name: 'a', value: 9, principal: 8 }]), d2);
+  assert.deepEqual(plain(out).map((r) => [r[1], r[2]]), [['a', 1], ['a', 9]]);          // 그날(10-12) 줄은 전부 교체, 다른 날은 유지
+});
+
+test('upsertAccountLog: 이름을 바꾼 계좌도 그날 줄은 하나만, 기타 계좌가 없어지면 그날 줄이 사라진다', () => {
+  const d = new Date(2026, 9, 12);
+  const existing = [[d, '키움', 1, 1]];
+  assert.deepEqual(plain(ctx.upsertAccountLog(existing, ctx.accountLogRows(d, [{ name: '신랑 키움', value: 2, principal: 2 }]), d)).map((r) => r[1]), ['신랑 키움']);
+  assert.deepEqual(plain(ctx.upsertAccountLog(existing, [], d)), []);
+});
+
+test('prevLogRow: 기록 날짜보다 앞선 마지막 줄 (같은 날 재실행이면 그 전 줄)', () => {
+  const rows = [[new Date(2026, 9, 10), 1], [new Date(2026, 9, 11), 2], [new Date(2026, 9, 12), 3], ['', '']];
+  assert.equal(ctx.prevLogRow(rows, new Date(2026, 9, 12))[1], 2);
+  assert.equal(ctx.prevLogRow(rows, new Date(2026, 9, 13))[1], 3);
+  assert.equal(ctx.prevLogRow(rows, new Date(2026, 9, 10)), null);
+});
+
+test('shouldRecordInvest: 4계좌가 모두 빠진 날 기타 계좌만 있어도, 직전 기록에 4계좌 값이 있었다면(일시 장애) 기록하지 않는다', () => {
+  const d = new Date(2026, 9, 12);
+  const only = ctx.withExtras(ctx.investLogRow(d, [['', ''], ['', ''], ['', ''], ['', '']]), [{ name: 'a', value: 5, principal: '' }]);
+  const prevOk = ctx.withExtras(ctx.investLogRow(d, [[1, 1], ['', ''], ['', ''], ['', '']]), []);        // 직전: 4계좌 중 값 있음(L=3)
+  const prevPasteOnly = ctx.withExtras(ctx.investLogRow(d, [['', ''], ['', ''], ['', ''], ['', '']]), [{ name: 'a', value: 5, principal: '' }]);   // 직전도 기타만(L=4)
+  assert.equal(ctx.shouldRecordInvest(only, prevOk), false);
+  assert.equal(ctx.shouldRecordInvest(only, prevPasteOnly), true);
+  assert.equal(ctx.shouldRecordInvest(only, null), true);                                                  // 첫 기록
+  assert.equal(ctx.shouldRecordInvest(only), true);
 });
