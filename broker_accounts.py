@@ -8,17 +8,31 @@ from layout import ACCT_NAMES, BROKER_ACCTS as S, USERS, a1_to_grid, number_form
 TITLE = f"{S}!A1"
 HEAD = 4
 FIRST, LAST = 5, 14
-HEADERS = ["이름", "소유자", "증권사", "방식", "예수금", "마지막 붙여넣기", "상태"]
+HEADERS = ["이름", "소유자", "증권사", "방식", "예수금", "마지막 붙여넣기", "상태", "종목평가", "원금(매입)", "평가금액(총)", "손익", "수익률"]
 
 SECTIONS: list = []
-HEADS = [f"{S}!A{HEAD}:G{HEAD}"]
+HEADS = [f"{S}!A{HEAD}:L{HEAD}"]
 TOTALS: list = []
 SUBTOTALS: list = []
-BODIES = [f"{S}!A{FIRST}:G{LAST}"]
+BODIES = [f"{S}!A{FIRST}:L{LAST}"]
 INPUTS = [f"{S}!A{FIRST}:E{LAST}"]
-RUNS = [("A", FIRST, LAST, "LCLCRCC")]
-WIDTHS = [180, 90, 110, 90, 110, 130, 110]
+RUNS = [("A", FIRST, LAST, "LCLCRCCRRRRR")]
+WIDTHS = [180, 90, 110, 90, 110, 130, 110, 110, 110, 120, 100, 80]
 HIDDEN: list = []
+
+
+T = "증권종목표"
+
+
+def _value_formulas(r: int) -> list[str]:
+    """H 종목평가 · I 원금(매입금액 합, 빈 매입금액이 있으면 빈칸) · J 평가금액(총) · K 손익 · L 수익률. 종목이 없으면(붙여넣기 전) 빈칸."""
+    a = f"{T}!$A$2:$A$1001"
+    return [f'=IF($A{r}="","",SUMIFS({T}!$F$2:$F$1001,{a},$A{r}))',
+            f'=IF($A{r}="","",IF(COUNTIFS({a},$A{r},{T}!$E$2:$E$1001,"")>0,"",SUMIFS({T}!$E$2:$E$1001,{a},$A{r})))',
+            f'=IF($A{r}="","",IF(COUNTIF({a},$A{r})=0,"",H{r}+N(E{r})))',
+            f'=IF(OR(J{r}="",I{r}=""),"",H{r}-I{r})',
+            f'=IF(OR(K{r}="",N(I{r})=0),"",K{r}/I{r})']
+
 
 # 탭 이름이 되므로 금지 문자 [ ] * ? : / \ 와 중복·90자 초과를 입력 단계에서 막는다 (apps-script validAccountName과 같은 규칙)
 NAME_RULE = (f'=OR(A{FIRST}="",AND(COUNTIF($A${FIRST}:$A${LAST},A{FIRST})=1,LEN(A{FIRST})<=90,'
@@ -30,8 +44,9 @@ def values() -> list[dict]:
               f'IF(TODAY()-F{FIRST}:F{LAST}>14,"오래됨","정상"))))')
     return [v(TITLE, [["증권 계좌"]]),
             v(f"{S}!A2", [["증권사 이름과 상관없이 계좌를 적으세요. 이름을 적으면 '계좌_이름' 탭이 자동으로 만들어집니다. 종목은 [증권종목]에 붙여넣으세요."]]),
-            v(f"{S}!A{HEAD}:G{HEAD}", [HEADERS]),
+            v(f"{S}!A{HEAD}:L{HEAD}", [HEADERS]),
             v(f"{S}!G{FIRST}", [[status]]),
+            v(f"{S}!H{FIRST}:L{LAST}", [_value_formulas(r) for r in range(FIRST, LAST + 1)]),
             v(f"{S}!A{LAST + 2}", [["방식은 지금 '붙여넣기'만 쓸 수 있습니다. 예수금은 증권사 앱의 현금(예수금)을 직접 적으세요."]])]
 
 
@@ -41,7 +56,8 @@ def _rule(a1: str, ctype: str, *values: str, strict: bool = False) -> dict:
 
 
 def formats() -> list[dict]:
-    return [number_format(f"{S}!E{FIRST}:E{LAST}", "NUMBER", "#,##0"), number_format(f"{S}!F{FIRST}:F{LAST}", "DATE", "yyyy-mm-dd"),
+    return [number_format(f"{S}!E{FIRST}:E{LAST}", "NUMBER", "#,##0"), number_format(f"{S}!H{FIRST}:K{LAST}", "NUMBER", "#,##0"),
+            number_format(f"{S}!L{FIRST}:L{LAST}", "PERCENT", "0.0%"), number_format(f"{S}!F{FIRST}:F{LAST}", "DATE", "yyyy-mm-dd"),
             _rule(ACCT_NAMES, "CUSTOM_FORMULA", NAME_RULE, strict=True),
             _rule(f"B{FIRST}:B{LAST}", "ONE_OF_RANGE", USERS), _rule(f"D{FIRST}:D{LAST}", "ONE_OF_LIST", "붙여넣기", strict=True),
             _rule(f"E{FIRST}:E{LAST}", "NUMBER_GREATER_THAN_EQ", "0")]

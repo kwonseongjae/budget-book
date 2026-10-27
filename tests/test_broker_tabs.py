@@ -41,7 +41,7 @@ def test_tabs_follow_invest_and_have_input_color():
 
 def test_account_list_headers_input_cells_and_status_formula():
     vals = {e["range"]: e["values"] for e in broker_accounts.values()}
-    assert vals["증권계좌!A4:G4"] == [["이름", "소유자", "증권사", "방식", "예수금", "마지막 붙여넣기", "상태"]]
+    assert vals["증권계좌!A4:L4"][0][:7] == ["이름", "소유자", "증권사", "방식", "예수금", "마지막 붙여넣기", "상태"]
     assert broker_accounts.INPUTS == ["증권계좌!A5:E14"]
     assert "증권계좌!F5" not in vals and not any(k.startswith("증권계좌!A5") for k in vals)   # 입력·스크립트 칸은 값으로 쓰지 않는다
     assert "붙여넣기 전" in vals["증권계좌!G5"][0][0] and "오래됨" in vals["증권계좌!G5"][0][0]
@@ -77,7 +77,7 @@ def test_live_migration_adds_both_tabs_once():
     structure, values, _v = mc.plan(_state(ALL - {layout.BROKER_ACCTS, layout.BROKER_POS, layout.POS_TABLE_TAB}))
     added = {r["addSheet"]["properties"]["title"] for r in structure if "addSheet" in r}
     assert {layout.BROKER_ACCTS, layout.BROKER_POS, layout.POS_TABLE_TAB} <= added
-    assert {"증권계좌!A4:G4", "증권종목표!A1:G1"} <= {e["range"] for e in values}
+    assert {"증권계좌!A4:L4", "증권종목표!A1:G1"} <= {e["range"] for e in values}
     again = mc.plan(_state())[0]
     assert not {layout.BROKER_ACCTS, layout.BROKER_POS} & {r["addSheet"]["properties"]["title"] for r in again if "addSheet" in r}
 

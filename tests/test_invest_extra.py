@@ -34,3 +34,17 @@ def test_live_tabs_grow_to_new_widths_once_and_detail_tab_is_added():
     done = {layout.SHEET_ID[layout.INVEST_LOG]: (1000, 14), layout.SHEET_ID[layout.BROKER_ACCTS]: (40, 12)}
     again = {r["appendDimension"]["sheetId"] for r in mc.plan(_state(grid=done))[0] if "appendDimension" in r}
     assert layout.SHEET_ID[layout.INVEST_LOG] not in again and layout.SHEET_ID[layout.BROKER_ACCTS] not in again
+
+
+def test_account_list_has_per_account_value_columns_with_blank_safe_formulas():
+    import broker_accounts
+    vals = {e["range"]: e["values"] for e in broker_accounts.values()}
+    assert vals["증권계좌!A4:L4"][0][7:] == ["종목평가", "원금(매입)", "평가금액(총)", "손익", "수익률"]
+    row5 = vals["증권계좌!H5:L14"][0]
+    h, i, j, k, l = row5
+    assert 'SUMIFS(증권종목표!$F$2:$F$1001,증권종목표!$A$2:$A$1001,$A5)' in h
+    assert 'COUNTIFS(증권종목표!$A$2:$A$1001,$A5,증권종목표!$E$2:$E$1001,"")>0' in i       # 매입금액이 빈 종목이 있으면 원금은 비움
+    assert 'COUNTIF(증권종목표!$A$2:$A$1001,$A5)=0' in j and 'N(E5)' in j                     # 종목이 없으면(붙여넣기 전) 총평가도 빈칸
+    assert k == '=IF(OR(J5="",I5=""),"",H5-I5)' and l == '=IF(OR(K5="",N(I5)=0),"",K5/I5)'
+    assert len(vals["증권계좌!H5:L14"]) == 10
+    assert not any(a in vals for a in ("증권계좌!A5", "증권계좌!E5", "증권계좌!F5"))          # 입력·스크립트 칸은 값으로 쓰지 않는다
