@@ -48,3 +48,28 @@ def test_account_list_has_per_account_value_columns_with_blank_safe_formulas():
     assert k == '=IF(OR(J5="",I5=""),"",H5-I5)' and l == '=IF(OR(K5="",N(I5)=0),"",K5/I5)'
     assert len(vals["증권계좌!H5:L14"]) == 10
     assert not any(a in vals for a in ("증권계좌!A5", "증권계좌!E5", "증권계좌!F5"))          # 입력·스크립트 칸은 값으로 쓰지 않는다
+
+
+def test_invest_row13_sums_pasted_accounts_and_kpis_include_it():
+    import invest
+    vals = {e["range"]: e["values"] for e in invest.invest_values()}
+    a, b, c, d, e, f, g = vals["투자!A13:G13"][0]
+    assert a == "기타 증권사 (붙여넣기)"
+    assert b == '=IF(COUNT(증권계좌!$J$5:$J$14)=0,"",SUM(증권계좌!$J$5:$J$14))'
+    assert 'SUM(FILTER(증권계좌!$I$5:$I$14,ISNUMBER(증권계좌!$J$5:$J$14)))' in c           # 평가가 있는 계좌의 원금만
+    assert d == '=IF(COUNT(증권계좌!$K$5:$K$14)=0,"",SUM(증권계좌!$K$5:$K$14))'
+    assert 'SUM(FILTER(증권계좌!$I$5:$I$14,ISNUMBER(증권계좌!$K$5:$K$14)))' in e            # 손익이 있는 계좌의 원금이 분모
+    assert '오래됨' in g and '붙여넣기 전' in g
+    assert vals["투자!J13"][0][0].startswith('=IF(COUNT(증권계좌!$J$5:$J$14)=0,"",')
+    k = vals["투자!A4:F4"][0]
+    assert "B7,B8,B10,B11,B13" in k[0] and "C13" in k[1] and "D13" in k[2] and "IF(ISNUMBER(D13),C13,0)" in k[3]
+
+
+def test_row13_formats_applied_every_run_with_red_gain_blue_loss_number_format():
+    structure = mc.plan(_state())[0]
+    patterns = [r["repeatCell"]["cell"]["userEnteredFormat"].get("numberFormat", {}).get("pattern", "") for r in structure
+                if "repeatCell" in r and r["repeatCell"]["range"] == layout.a1_to_grid("투자!D13")]
+    assert patterns == ["[Red]+#,##0;[Blue]-#,##0;0"]
+    pct = [r["repeatCell"]["cell"]["userEnteredFormat"]["numberFormat"]["pattern"] for r in structure
+           if "repeatCell" in r and r["repeatCell"]["range"] == layout.a1_to_grid("투자!E13")]
+    assert pct == ["[Red]0.0%;[Blue]-0.0%;0.0%"]

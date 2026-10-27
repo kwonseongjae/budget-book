@@ -92,14 +92,31 @@ def total_row(name, r, a, b) -> list[str]:
             f'=IF(COUNT(D{a},D{b})=0,"",SUM(D{a},D{b}))', f'=IFERROR(D{r}/({paired_principal((a, b))}),"")', "", ""]
 
 
+EXTRA_ROW = 13
+EXTRA_NAME = "기타 증권사 (붙여넣기)"
+_LIST = "증권계좌"
+
+
+def extra_row() -> list[str]:
+    """붙여넣기 계좌(증권계좌 5~14행) 합계 한 줄. 평가가 숫자인 계좌만 센다. 갱신은 가장 오래된 붙여넣기 날짜."""
+    j, i, k, e, f, g = (f"{_LIST}!${c}$5:${c}$14" for c in "JIKEFG")
+    return [EXTRA_NAME,
+            f'=IF(COUNT({j})=0,"",SUM({j}))',
+            f'=IF(COUNT({j})=0,"",IFERROR(SUM(FILTER({i},ISNUMBER({j}))),0))',
+            f'=IF(COUNT({k})=0,"",SUM({k}))',
+            f'=IF(COUNT({k})=0,"",IFERROR(D13/SUM(FILTER({i},ISNUMBER({k}))),""))',
+            f'=IF(COUNT({j})=0,"",IFERROR(MIN(FILTER({f},ISNUMBER({f}))),""))',
+            f'=IF(COUNT({j})=0,"붙여넣기 전",IF(COUNTIF({g},"오래됨")>0,"오래됨 "&COUNTIF({g},"오래됨")&"개","정상"))']
+
+
 def _kpi() -> list[str]:
-    acc = "B7,B8,B10,B11"
+    acc = "B7,B8,B10,B11,B13"
     d, t = f"FILTER({L}!A2:A,{L}!A2:A<>\"\")", f"FILTER({L}!J2:J,{L}!A2:A<>\"\")"
     prev_day = f'=IFERROR(LET(t,{t},n,ROWS(t),IF(n<2,"",INDEX(t,n)-INDEX(t,n-1))),"")'
     prev_month = (f'=IFERROR(LET(d,{d},t,{t},last,MAX(d),pe,MAX(FILTER(d,d<=EOMONTH(last,-1))),'
                   f'INDEX(t,MATCH(last,d,0))-INDEX(t,MATCH(pe,d,0))),"")')
-    return [f'=IF(COUNT({acc})=0,"",SUM({acc}))', f'=IF(COUNT(C7,C8,C10,C11)=0,"",SUM(C7,C8,C10,C11))',
-            '=IF(COUNT(D7,D8,D10,D11)=0,"",SUM(D7,D8,D10,D11))', f'=IFERROR(C4/({paired_principal((7, 8, 10, 11))}),"")',
+    return [f'=IF(COUNT({acc})=0,"",SUM({acc}))', f'=IF(COUNT(C7,C8,C10,C11,C13)=0,"",SUM(C7,C8,C10,C11,C13))',
+            '=IF(COUNT(D7,D8,D10,D11,D13)=0,"",SUM(D7,D8,D10,D11,D13))', f'=IFERROR(C4/({paired_principal((7, 8, 10, 11, 13))}),"")',
             prev_day, prev_month]
 
 
@@ -149,6 +166,8 @@ def invest_values() -> list[dict]:
     out += [v(f"{INVEST}!A{r[1]}:G{r[1]}", [total_row(*r)]) for r in TOTAL_ROWS]
     out += ([v(f"{INVEST}!J6", [[CASH_HEAD]])] + [v(f"{INVEST}!J{r[1]}", [[cash_cell(r[1], r[7])]]) for r in ACCOUNT_ROWS]
             + [v(f"{INVEST}!J{r[1]}", [[f'=IF(COUNT(J{r[2]},J{r[3]})=0,"",SUM(J{r[2]},J{r[3]}))']]) for r in TOTAL_ROWS])
+    out += [v(f"{INVEST}!A13:G13", [extra_row()]),
+            v(f"{INVEST}!J13", [[f'=IF(COUNT({_LIST}!$J$5:$J$14)=0,"",IFERROR(SUM(FILTER({_LIST}!$E$5:$E$14,ISNUMBER({_LIST}!$J$5:$J$14))),""))']])]
     return (out + _overview() + _trend_tables()
             # 머리글·사람 이름만: B2:G3은 스크립트가 쓰는 결과라 재실행 때 지우면 안 된다
             + [v(f"{KIS_RAW}!A1:G1", [KIS_HEAD]), v(f"{KIS_RAW}!A2:A3", [[nm("신랑")], [nm("신부")]]),
@@ -162,7 +181,9 @@ def structure_requests() -> list[dict]:
     fmts = [(f"{INVEST}!A4:C4", "NUMBER", "#,##0"), (f"{INVEST}!D4", "PERCENT", "0.0%"),
             (f"{INVEST}!E4:F4", "NUMBER", "+#,##0;-#,##0;0"), (f"{INVEST}!B7:D12", "NUMBER", "#,##0"), (f"{INVEST}!J7:J12", "NUMBER", "#,##0"),
             (f"{INVEST}!E7:E12", "PERCENT", "0.0%"), (f"{INVEST}!F7:F12", "DATE_TIME", "mm/dd hh:mm"),
-            (f"{INVEST}!H7:I12", "NUMBER", "#,##0"), (f"{INVEST}!A41:A100", "DATE", "yyyy-mm"),
+            (f"{INVEST}!H7:I12", "NUMBER", "#,##0"),
+            (f"{INVEST}!B13:C13", "NUMBER", "#,##0"), (f"{INVEST}!D13", "NUMBER", "[Red]+#,##0;[Blue]-#,##0;0"),
+            (f"{INVEST}!E13", "PERCENT", "[Red]0.0%;[Blue]-0.0%;0.0%"), (f"{INVEST}!F13", "DATE_TIME", "mm/dd"), (f"{INVEST}!J13", "NUMBER", "#,##0"), (f"{INVEST}!A41:A100", "DATE", "yyyy-mm"),
             (f"{INVEST}!B41:C100", "NUMBER", "#,##0"), (f"{INVEST}!E41:E100", "DATE", "m/d"),
             (f"{INVEST}!F41:F100", "NUMBER", "#,##0"), (f"{KIS_RAW}!E2:E3", "DATE_TIME", "yyyy-mm-dd hh:mm"),
             (f"{KIS_RAW}!F2:G3", "NUMBER", "#,##0"), (f"{L}!A2:A1000", "DATE", "yyyy-mm-dd"),

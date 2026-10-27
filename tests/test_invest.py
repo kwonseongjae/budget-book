@@ -50,7 +50,7 @@ def test_totals_kpi_and_changes_tolerate_empty_log():
     vals = _by_range(invest.invest_values())
     assert vals["투자!A9:G9"][0][1] == '=IF(COUNT(B7,B8)=0,"",SUM(B7,B8))'
     kpi = vals["투자!A4:F4"][0]
-    assert kpi[0] == '=IF(COUNT(B7,B8,B10,B11)=0,"",SUM(B7,B8,B10,B11))'
+    assert kpi[0] == '=IF(COUNT(B7,B8,B10,B11,B13)=0,"",SUM(B7,B8,B10,B11,B13))'   # 13행 = 기타 증권사(붙여넣기)
     assert kpi[4].startswith("=IFERROR(") and kpi[5].startswith("=IFERROR(")
     assert "EOMONTH(last,-1)" in kpi[5]
 
@@ -115,8 +115,8 @@ def test_pnl_counts_only_accounts_with_both_value_and_principal():
     # 검토 지적: 평가만 있고 원금이 빈 계좌의 평가 전체가 손익으로 잡혔다 (A4−B4)
     vals = _by_range(invest.invest_values())
     kpi = vals["투자!A4:F4"][0]
-    assert kpi[2] == '=IF(COUNT(D7,D8,D10,D11)=0,"",SUM(D7,D8,D10,D11))'
-    paired = "IF(ISNUMBER(D7),C7,0)+IF(ISNUMBER(D8),C8,0)+IF(ISNUMBER(D10),C10,0)+IF(ISNUMBER(D11),C11,0)"
+    assert kpi[2] == '=IF(COUNT(D7,D8,D10,D11,D13)=0,"",SUM(D7,D8,D10,D11,D13))'
+    paired = "IF(ISNUMBER(D7),C7,0)+IF(ISNUMBER(D8),C8,0)+IF(ISNUMBER(D10),C10,0)+IF(ISNUMBER(D11),C11,0)+IF(ISNUMBER(D13),C13,0)"
     assert kpi[3] == f'=IFERROR(C4/({paired}),"")'
     total = vals["투자!A9:G9"][0]
     assert total[3] == '=IF(COUNT(D7,D8)=0,"",SUM(D7,D8))'

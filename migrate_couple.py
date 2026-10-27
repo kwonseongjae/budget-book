@@ -442,7 +442,7 @@ def _always(s: State) -> list[dict]:
     kinds = _in(layout.validation_requests(), [f"{ASSETS}!A2:A50", f"{ASSETS}!B2:B50", f"{layout.TXN}!F2:F5000", f"{layout.TXN}!G2:G5000",
                                                f"{layout.TXN}!B2:B5000", f"{layout.TXN}!C2:C5000", f"{layout.TXN}!I2:I5000",
                                                f"{layout.RECUR}!F2:F50", f"{layout.FAV}!E2:E50", f"{DASH}!C1", f"{COUPLE}!C1", f"{layout.TREND}!C1"], "setDataValidation")
-    fmts = _in(invest.structure_requests(), [f"{INVEST}!B16:D20", f"{INVEST}!I16:I19"], "repeatCell")
+    fmts = _in(invest.structure_requests(), [f"{INVEST}!B16:D20", f"{INVEST}!I16:I19", f"{INVEST}!B13:C13", f"{INVEST}!D13", f"{INVEST}!E13", f"{INVEST}!F13", f"{INVEST}!J13"], "repeatCell")
     dash = _in(formulas.core_formats(), [f"{DASH}!J6:L6"], "repeatCell") + styling.asset_status_style()
     base = [r for r in styling.base_requests() if _sheet_ids(r) != {SHEET_ID[GUIDE]}]
     look = ([theme.spreadsheet_theme()] + base + styling.dashboard_requests() + styling.highlight_requests()
