@@ -49,6 +49,7 @@ SHEETS = [
     (SMS, 1000, 500, 3, False),
     (FAV, 900, 50, 7, False),
     (COUPLE, 1700, 60, 11, False),
+    (STOCKS, 2400, 150, 28, False),  # 투자 바로 왼쪽에 고정
     (INVEST, 1900, 100, 10, False),
     (ASSET_STATUS, 2100, 90, 16, False),  # 81~85행 월별 저축률 가로형 표  # K열: 부채 표 대출명 선택지(숨은 보조 열)
     (SETTINGS, 200, 60, 13, False),
@@ -59,7 +60,6 @@ SHEETS = [
     (FIXED, 2200, 60, 16, False),
     (CARDS, 2300, 60, 16, False),
     (SAVINGS, 2500, 60, 16, False),
-    (STOCKS, 2400, 150, 28, False),
     (NETWORTH, 1800, 200, 12, False),  # 차트를 F열에 두므로 12열
     (BROKER_ACCTS, 2800, 40, 12, False),
     (BROKER_POS, 2810, 1010, 20, False),
@@ -83,7 +83,7 @@ SHEETS = [
 SHEET_ID = {title: sid for title, sid, *_ in SHEETS}
 # 자주 안 쓰는 보기 탭: 처음엔 숨겨 두고 PC 메뉴 '가계부'로 꺼낸다 (SHEETS의 hidden은 사람이 안 보는 내부 탭)
 TUCKED = {TREND, CAL, SEARCH, STOCK, MERITZ, STOCK2, MERITZ2,
-          CHECKLIST, RECUR, FIXED, CARDS, SAVINGS, STOCKS, NETWORTH, BROKER_ACCTS, BROKER_POS}
+          CHECKLIST, RECUR, FIXED, CARDS, SAVINGS, NETWORTH, BROKER_ACCTS, BROKER_POS}
 # [자산] G열 연동 값 → [투자] 탭 그 계좌의 행 (평가 B열, 마지막 갱신 F열)
 INVEST_ACCOUNTS = [(nm("메리츠_신랑"), 7), (nm("한투ISA_신랑"), 8), (nm("메리츠_신부"), 10), (nm("한투ISA_신부"), 11)]
 

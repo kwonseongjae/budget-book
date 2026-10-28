@@ -15,7 +15,7 @@ def test_invest_tabs_defined_visible_and_hidden():
     assert props["투자기록"] == (2000, 1000, 14, True)
     assert "주식_신랑" in layout.TUCKED
     visible = [s["properties"]["title"] for s in layout.create_body("t")["sheets"] if not s["properties"]["hidden"]]
-    assert visible == ["대시보드", "빠른입력", "내역", "문자입력", "즐겨찾기", "부부", "투자", "자산현황", "설정", "자산", "사용법"]
+    assert visible == ["대시보드", "빠른입력", "내역", "문자입력", "즐겨찾기", "부부", "주식투자", "투자", "자산현황", "설정", "자산", "사용법"]
 
 
 def test_account_rows_prefer_manual_then_auto():
