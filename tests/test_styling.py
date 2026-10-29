@@ -19,7 +19,7 @@ def _props(reqs):
 
 def test_dashboard_is_first_tab_and_guide_is_last_visible():
     titles = [s["properties"]["title"] for s in layout.create_body("t")["sheets"]]
-    assert titles[:4] == ["대시보드", "빠른입력", "내역", "문자입력"]  # 자주 쓰는 탭이 왼쪽 (2026-10-22)
+    assert titles[:4] == ["대시보드", "빠른입력", "내역", "반복"]  # 자주 쓰는 탭이 왼쪽 (2026-10-22)
     visible = [s["properties"]["title"] for s in layout.create_body("t")["sheets"] if not s["properties"]["hidden"]]
     assert visible[-1] == "사용법"
 

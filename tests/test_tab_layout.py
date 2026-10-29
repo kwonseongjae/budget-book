@@ -6,9 +6,9 @@ import layout
 
 GS = (Path(__file__).parent.parent / "apps-script" / "triggers.gs").read_text(encoding="utf-8")
 
-WEEKLY = ["대시보드", "빠른입력", "내역", "문자입력", "즐겨찾기", "부부", "주식투자", "투자", "자산현황"]   # 일주일 단위로 쓰는 탭 (왼쪽, 주식투자는 투자 바로 왼쪽)
+WEEKLY = ["대시보드", "빠른입력", "내역", "반복", "문자입력", "즐겨찾기", "부부", "주식투자", "투자", "자산현황"]   # 일주일 단위로 쓰는 탭 (왼쪽, 주식투자는 투자 바로 왼쪽)
 MONTHLY_RIGHT = ["설정", "자산", "사용법"]                                                       # 달 1~2회 (오른쪽, 계속 보임)
-MENU_ONLY = ["시작하기", "반복", "고정지출", "카드", "저축·연금", "자산기록", "증권계좌", "증권종목"]
+MENU_ONLY = ["시작하기", "고정지출", "카드", "저축·연금", "자산기록", "증권계좌", "증권종목"]
 
 
 def _visible():
@@ -17,7 +17,7 @@ def _visible():
 
 def test_visible_tabs_are_weekly_on_the_left_and_monthly_on_the_right():
     assert _visible() == WEEKLY + MONTHLY_RIGHT
-    assert len(_visible()) <= 12                     # 한 화면(약 1,650px)에 좌우 이동 없이
+    assert len(_visible()) <= 13                     # 한 화면(약 1,650px)에 좌우 이동 없이
 
 
 def test_first_tab_is_dashboard_and_menu_only_tabs_follow_visible_ones():
