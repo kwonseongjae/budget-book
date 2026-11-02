@@ -1,21 +1,19 @@
 # 다증권사 B단계: 투자 합산·투자기록에 붙여넣기 계좌 자동 포함 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** `증권계좌`에 붙여넣기 계좌를 적고 종목을 반영하면, `투자` 탭 합산(평가·원금·손익·수익률·KPI)과 `투자기록`(매일 06시 기록)에 그 계좌가 **자동으로 포함**되고, 계좌별 기록도 쌓인다.
 
 **Architecture:** 기존 `투자` 탭의 4개 고정 계좌 행과 `투자기록` 12열 기록은 **건드리지 않고**, (1) `증권계좌`에 계좌별 평가·원금·손익 열을 수식으로 더하고, (2) `투자` 13행(비어 있던 줄)에 "기타 증권사(붙여넣기)" 합계 한 줄을 넣어 KPI에 포함하고, (3) `투자기록`에 `기타 평가·기타 원금` 두 열(M·N)을 더하며 합계(J·K)에는 포함하고, (4) 숨김 탭 `투자기록_계좌`(날짜|계좌|평가|원금)에 붙여넣기 계좌별 기록을 쌓는다.
 
 **Tech Stack:** Python 3 + pytest(시트 생성기), Apps Script(V8) + `node --test`(가짜 시트), Sheets API.
 
-**Spec:** `docs/superpowers/specs/2026-10-21-multi-broker-design.md` (§3.3 투자기록·§7 투자 화면). **설계와 다른 점(아래 Ruling)**: 설계는 `투자기록` 전체를 "날짜|계좌|평가|원금" 한 줄씩으로 변환하라고 했으나, 운영 기록 변환의 위험(과거 추이 손상)을 피하려고 기존 12열 기록은 그대로 두고 **기타 합계 2열 + 계좌별 기록 새 탭**을 더하는 방식으로 같은 목표(자동 포함·계좌별 기록)를 이룬다. 기존 4계좌의 이전·어댑터·`주식투자` 소스 전환은 C단계 별도 계획.
+**Spec:** `docs/design/specs/2026-10-21-multi-broker-design.md` (§3.3 투자기록·§7 투자 화면). **설계와 다른 점(아래 Ruling)**: 설계는 `투자기록` 전체를 "날짜|계좌|평가|원금" 한 줄씩으로 변환하라고 했으나, 운영 기록 변환의 위험(과거 추이 손상)을 피하려고 기존 12열 기록은 그대로 두고 **기타 합계 2열 + 계좌별 기록 새 탭**을 더하는 방식으로 같은 목표(자동 포함·계좌별 기록)를 이룬다. 기존 4계좌의 이전·어댑터·`주식투자` 소스 전환은 C단계 별도 계획.
 
 ## Global Constraints
 
 - 코드·문서·테스트에는 실제 이름 금지, 사람은 **신랑 / 신부**만 쓴다 (`names.py`, `conftest.py`).
 - 조회 전용(주문·환전 없음), 키·계좌번호는 코드·git·시트에 두지 않는다.
 - 사용자 입력 칸과 스크립트가 쓰는 칸은 `values()`로 덮어쓰지 않는다 (`증권계좌` A5:E14, F5:F14, `투자기록` 데이터 행, `투자기록_계좌` 데이터 행).
-- 커밋은 파일 경로를 지정한다 (`git add -A` 금지). 커밋 메시지 끝: `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
+- 커밋은 파일 경로를 지정한다 (`git add -A` 금지). 커밋 메시지 끝: ``.
 - 붙여넣기 계좌가 하나도 없으면 `투자`·`투자기록`의 기존 값은 **한 글자도 달라지지 않는다** (회귀 금지).
 - 기존 테스트(pytest 409, node 173)는 계속 통과해야 한다. 열 수·행 수·KPI 수식을 세는 기존 테스트의 기대값 갱신은 해당 Task에서 한다.
 - 투자 화면 색 관례: 수익 빨강, 손실 파랑.
@@ -85,7 +83,7 @@ Expected: `# fail 0`
 git add apps-script/positions.gs tests/account_tab.test.js
 git commit -m "fix: 계좌 탭 손익 비움 조건이 수량이 아닌 매입금액 열을 보도록
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -219,7 +217,7 @@ Expected: 전부 통과 (`# fail 0`). 기존 `investLogRow`/`shouldRecordInvest`
 git add apps-script/invest_logic.gs tests/invest.test.js
 git commit -m "feat: 투자기록 순수 로직 — 기타(붙여넣기) 계좌 합산·계좌별 기록
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -406,7 +404,7 @@ Expected: 새 테스트 통과. 기존 테스트 중 **`투자기록` 열 수(12
 git add apps-script/triggers.gs layout.py invest.py migrate_couple.py tests/invest_record.test.js tests/test_invest_extra.py tests/test_invest.py tests/test_layout.py tests/test_couple.py tests/test_migrate_couple.py
 git commit -m "feat: recordInvest가 기타(붙여넣기) 계좌를 투자기록 합계·계좌별 기록에 포함
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 (다른 테스트 파일의 기대값을 고쳤다면 그 경로도 `git add`에 지정한다.)
 
@@ -475,7 +473,7 @@ Expected: 통과. `tests/test_broker_tabs.py::test_account_list_headers_input_ce
 git add broker_accounts.py tests/test_invest_extra.py tests/test_broker_tabs.py
 git commit -m "feat: 증권계좌에 계좌별 종목평가·원금·총평가·손익·수익률 열
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -576,7 +574,7 @@ Expected: 새 테스트 통과. `tests/test_invest.py` 등에서 KPI 수식 문�
 git add invest.py migrate_couple.py tests/test_invest_extra.py tests/test_invest.py
 git commit -m "feat: 투자 13행 기타 증권사(붙여넣기) 합계, KPI 포함
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -628,7 +626,7 @@ Expected: 모두 통과
 git add guide.py docs/USAGE.md tests/test_invest_extra.py
 git commit -m "docs: 투자 합산·투자기록에 기타 증권사 포함 안내
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---

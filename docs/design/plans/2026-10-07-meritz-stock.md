@@ -1,19 +1,17 @@
 # 메리츠증권 주식 연동 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** 가계부 시트에 메리츠증권 Open API 조회 결과(순자산·보유 종목·외화 예수금)를 숨김 탭 `메리츠원본`에 쓰는 Apps Script와, 그 값을 보여 주는 `주식`·`메리츠` 탭, `자산` 탭 연동 열을 더하고, 운영 시트에 제자리로 적용한다.
 
 **Architecture:** 판단 로직은 `apps-script/meritz_logic.gs`(순수 함수, node 시험), API 호출·잠금·속성·쓰기는 `apps-script/meritz.gs`. 시트 쪽은 `meritz_sheet.py`(블록 위치·수식 값)와 `meritz_style.py`(검증·서식·차트)가 요청 JSON을 만들고, 새 시트는 `build_budget.py`, 운영 시트는 `migrate_meritz.py`가 쓴다. 두 언어가 공유하는 계약은 `tests/fixtures/meritz_expected.json`(원본 블록 기대값)이다.
 
 **Tech Stack:** Python 3.12, google-api-python-client, pytest / Google Apps Script V8 / Node 22 (`node --test`)
 
-**Spec:** `docs/superpowers/specs/2026-10-07-meritz-stock-design.md` (v2)
+**Spec:** `docs/design/specs/2026-10-07-meritz-stock-design.md` (v2)
 
 ## Global Constraints
 
 - 작업 폴더 `/mnt/d/budget book`, 브랜치 `feature/budget-sheet`. 모든 명령은 `cd "/mnt/d/budget book" && ...`.
-- 커밋 메시지 끝: 빈 줄 + `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- 커밋 메시지 끝: 빈 줄 + ``.
 - 새 탭 이름 정확히: `주식`(sheetId 1500, 보임), `메리츠`(1600, 보임), `메리츠원본`(1400, 숨김). `자산` 탭은 8열(A~H).
 - `메리츠원본` 블록 위치(고정): 상태 `A1:E5`(2~5행 = 총자산·보유종목·해외보유·외화예수금), 요약 `G1:H8`(H1 총자산, H2 원화 현금, H3 유가증권 평가, H4 외화 예수금(원), H5 대출, H6 자동투자 인출가능, H7 순자산, H8 갱신 시각), 외화 `J1:N6`(데이터 2~6행), 종목 `A10:N110`(데이터 11~110행, 14열).
 - 호출 경로는 `/oauth2/token`과 조회 4개(`/accounts/v1/me/valuation`, `/accounts/v1/me/holdings`, `/accounts/v1/me/overseas/holdings`, `/accounts/v1/me/overseas/currencies`)뿐. 주문·환전 경로 금지. 요청에 `tr_cont`를 넣지 않는다.
@@ -1741,7 +1739,7 @@ git commit -m "test: 메리츠 화면 임시 시트 통합 시험"
 
 Run:
 ```bash
-python3 - <<'EOF' > /tmp/claude-1000/-home-jack/216c03f3-56ca-434c-bdad-1837a6b06ba5/scratchpad/assets_before.json
+python3 - <<'EOF' > /tmp/budget-book/assets_before.json
 import json
 from googleapiclient.discovery import build
 from auth import get_credentials
@@ -1749,7 +1747,7 @@ sid = open('.spreadsheet_id').read().strip()
 v = build('sheets', 'v4', credentials=get_credentials()).spreadsheets().values()
 print(json.dumps(v.get(spreadsheetId=sid, range='자산!A1:F20', valueRenderOption='UNFORMATTED_VALUE').execute().get('values'), ensure_ascii=False))
 EOF
-wc -c /tmp/claude-1000/-home-jack/216c03f3-56ca-434c-bdad-1837a6b06ba5/scratchpad/assets_before.json
+wc -c /tmp/budget-book/assets_before.json
 ```
 Expected: 0보다 큰 바이트 수
 
@@ -1768,7 +1766,7 @@ from googleapiclient.discovery import build
 from auth import get_credentials
 sid = open('.spreadsheet_id').read().strip()
 s = build('sheets', 'v4', credentials=get_credentials()).spreadsheets()
-before = json.load(open('/tmp/claude-1000/-home-jack/216c03f3-56ca-434c-bdad-1837a6b06ba5/scratchpad/assets_before.json'))
+before = json.load(open('/tmp/budget-book/assets_before.json'))
 after = s.values().get(spreadsheetId=sid, range='자산!A1:F20', valueRenderOption='UNFORMATTED_VALUE').execute().get('values')
 print('자산 A:F 동일:', before == after)
 print('주식!B3:', s.values().get(spreadsheetId=sid, range='주식!B3').execute().get('values'))

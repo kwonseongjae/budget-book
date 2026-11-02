@@ -66,7 +66,7 @@ flowchart LR
 | `.spreadsheet_id` · `.script_id` | 운영 시트·스크립트 식별자 |
 | `메리츠.txt` · `*snapshot*.json` | 증권 키·계좌 스냅샷 |
 | `.names` | 실제 사용자 이름 (로컬 설정) |
-| `.old/` · `.superpowers/` · `tools/` · `docs/private/` | 로컬 작업물 |
+| `.old/` · `tools/` · `docs/private/` | 로컬 작업물 |
 
 - 구글 토큰은 `~/.config/budget-book/token.json`(권한 600, `BUDGET_TOKEN_FILE`로 변경).
 - 증권 앱 키·계좌번호는 코드·git·시트에 두지 않고 각 사용자의 UserProperties에만 둡니다. 메리츠·한투는 **조회 전용**(주문·환전 없음).

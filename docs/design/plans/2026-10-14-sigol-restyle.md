@@ -1,14 +1,12 @@
 # 시골쥐 스타일 재구성 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** 지금 운영 가계부 시트를 제자리에서 시골쥐 색·모양(남색 머리글·회청색 바탕·분홍 입력 칸·업데이트일)으로 바꾸고, 새 [자산현황] 탭(목표·저축률·자산 분포·부채)과 단계형 사용법을 더한다.
 
 **Architecture:** 색은 `styling.py` 토큰 한곳. 화면 탭 바탕·표 흰 바탕·머리글·입력 칸·업데이트일은 새 `theme.py`가 운영 위치(dash_head·dash_base·trend_head)를 받아 repeatCell로 만든다. 자산현황은 새 `asset_status.py`(breakdown.py와 같은 모양: 값·서식·그래프 함수). 운영 반영은 `migrate_couple.py`의 반복 안전 단계(`_structure`·`_values`·`_always`·`_visual`)에 끼워 넣는다.
 
 **Tech Stack:** Python 3.12 (Sheets API 요청 생성), pytest, Apps Script V8 + node --test, google-api-python-client.
 
-**Spec:** `docs/superpowers/specs/2026-10-14-asset-status-design.md`
+**Spec:** `docs/design/specs/2026-10-14-asset-status-design.md`
 
 ## Global Constraints
 
@@ -18,7 +16,7 @@
 - 운영 위치: 대시보드 표 머리글 19행(dash_head), 고정비·변동비 구역 46행(dash_base), 추이 머리글 14행(trend_head). 코드 기본값은 60·95·38.
 - 운영 적용은 `migrate_couple.py`로만, 두 번 실행해도 같은 결과. 적용 전 드라이브 백업.
 - 사람 입력 칸(설정 J8:J10, 자산현황 부채 표 입력 열)은 migrate가 절대 덮어쓰지 않는다.
-- git: 파일 경로를 지정해 add (`git add -A` 금지). `메리츠.txt`는 커밋 금지. 커밋 끝에 `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- git: 파일 경로를 지정해 add (`git add -A` 금지). `메리츠.txt`는 커밋 금지. 커밋 끝에 ``.
 - 사용자 보고는 한국어, 결론 먼저.
 - 읽기 한도 분당 60회 → 통합 시험은 batchGet으로 한 번에 읽기.
 
@@ -158,7 +156,7 @@ Expected: 전부 PASS (test_ui_polish의 `== styling.VIEW_TAB` 비교도 VIEW_TA
 ```bash
 cd "/mnt/d/budget book" && git add styling.py tests/test_styling.py tests/test_theme.py && git commit -m "style: 시골쥐 색 토큰 — 머리글 남색, 입력 칸 분홍, 탭 색
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -353,7 +351,7 @@ Expected: 전부 PASS. (test_every_visible_tab_colored: 새 탭이 TAB_COLORS에
 ```bash
 cd "/mnt/d/budget book" && git add theme.py layout.py styling.py tests/test_theme.py && git commit -m "feat: theme.py — 화면 탭 회청 바탕·흰 표·남색 머리글·분홍 입력 칸·업데이트일
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -444,7 +442,7 @@ Expected: 전부 PASS
 ```bash
 cd "/mnt/d/budget book" && git add migrate_couple.py build_budget.py tests/test_theme.py && git commit -m "feat: 시골쥐 화면을 새 시트·운영 migrate에 연결 (다른 서식보다 먼저)
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -692,7 +690,7 @@ Expected: 전부 PASS
 ```bash
 cd "/mnt/d/budget book" && git add asset_status.py layout.py tests/test_asset_status.py && git commit -m "feat: 자산현황 탭 수식 — 목표·월별 저축률·자산 분포·부채 표, 자산 종류 '대출'
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -812,7 +810,7 @@ Expected: 전부 PASS
 ```bash
 cd "/mnt/d/budget book" && git add migrate_couple.py build_budget.py layout.py tests/test_asset_status.py && git commit -m "feat: 자산현황 탭을 새 시트·운영에 연결 — 탭·그래프 1회, 입력 칸 보존·보호 예외
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -870,7 +868,7 @@ Expected: node fail 0, pytest 전부 PASS (NET_HEADERS를 비교하는 파이썬
 ```bash
 cd "/mnt/d/budget book" && git add apps-script/logic.gs couple.py tests/couple.test.js && git commit -m "feat: 대출을 카드와 함께 부채 칸으로 기록 — 자산기록 D '카드·대출 잔액'
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -957,7 +955,7 @@ Expected: 전부 PASS (사용법 행 수를 세는 기존 시험이 있으면 CO
 ```bash
 cd "/mnt/d/budget book" && git add guide.py formulas.py views.py migrate_couple.py tests/test_theme.py && git commit -m "docs: 사용법 단계표(D+0·매일·매달)와 자산현황 설명, 안내 문구 분홍·색 규칙 바로잡기
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -1057,7 +1055,7 @@ if __name__ == "__main__":
 - [ ] **Step 2: Run it**
 
 Run: `cd "/mnt/d/budget book" && timeout 600 python3 verify_asset_status.py`
-Expected: `통과: 자산현황 17개 항목 일치 (임시 시트는 휴지통으로)`. 다르면 메시지의 칸을 superpowers:systematic-debugging으로 원인부터 찾는다(기대값을 맞추려고 고치지 않는다).
+Expected: `통과: 자산현황 17개 항목 일치 (임시 시트는 휴지통으로)`. 다르면 메시지의 칸을 원인부터 찾는다(기대값을 맞추려고 고치지 않는다).
 
 - [ ] **Step 3: 기존 통합 시험도 그대로인지**
 
@@ -1069,7 +1067,7 @@ Expected: `통과: 부부 확장 27개 항목 일치`
 ```bash
 cd "/mnt/d/budget book" && git add verify_asset_status.py && git commit -m "test: 자산현황 통합 시험 — 대출 상환·저축률·목표·기한 지남
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -1123,5 +1121,4 @@ Expected: `적용: 구조 …개, 값 …개 범위, 서식 …개 요청` / 스
   - 대시보드·자산현황 PDF(`export?format=pdf&gid=400`, `gid=2100`, `range=A1:N60`로 쪽 수 줄이기)를 읽어 바탕 회청·머리글 남색·입력 분홍·업데이트일 확인
   - 대시보드 M6, 자산현황 A5(= 대시보드 J6 순자산) 값 확인
 
-- [ ] **Step 5: 메모리 갱신·보고**
-  `~/.claude/projects/-home-jack/memory/project_budget_book.md`에 한 줄: 시골쥐 재구성 적용(테마 토큰 styling·theme.py, 자산현황 탭 sheetId 2100, 대출 = 자산 종류 '대출', 목표 = 설정 J8:J10). 사용자에게 결론 먼저 한국어 보고(백업 ID, 시험 수, 확인한 화면, 남은 일: 목표 3칸·대출 입력은 사용자 몫, 다음 묶음 2·3).
+- [ ] **Step 5: 보고**

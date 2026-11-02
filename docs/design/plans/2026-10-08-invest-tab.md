@@ -1,19 +1,17 @@
 # 투자 탭 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** 부부 주식 계좌 4개(메리츠 2, 한투 ISA 2)의 평가금액·투자원금을 [투자] 탭 하나에서 합산해 보고, 매일 기록해 월별·최근 30일 추이를 그린다.
 
 **Architecture:** 판단 로직은 순수 함수 파일(`kis_logic.gs`, `invest_logic.gs`, `meritz_logic.gs`의 `principalOf`)에 두고 node로 시험한다. 연결부(`kis.gs`, `meritz.gs`, `triggers.gs`)가 각자 권한으로 자기 계좌를 조회해 숨김 원본 탭에 쓰고, 소유자의 06시 일일 작업이 [투자] 탭 최종 값을 `투자기록`에 하루 한 줄 쓴다. 시트 쪽은 `invest.py`가 수식·서식·차트 요청을 만들고 새 시트는 `build_budget.py`, 운영 시트는 `migrate_couple.py`가 쓴다.
 
 **Tech Stack:** Python 3.12, google-api-python-client, pytest / Google Apps Script V8 / Node 22 (`node --test`)
 
-**Spec:** `docs/superpowers/specs/2026-10-08-invest-tab-design.md`
+**Spec:** `docs/design/specs/2026-10-08-invest-tab-design.md`
 
 ## Global Constraints
 
 - 작업 폴더 `/mnt/d/budget book`, 브랜치 `feature/budget-sheet`. 모든 명령은 `cd "/mnt/d/budget book" && ...`.
-- 커밋 메시지 끝: 빈 줄 + `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`.
+- 커밋 메시지 끝: 빈 줄 + ``.
 - 새 탭: `투자`(sheetId 1900, 보임, 100행×10열), `한투원본`(1950, 숨김, 3행×7열), `투자기록`(2000, 숨김, 1000행×12열).
 - `주식_신랑`는 숨김 목록(`layout.TUCKED`)으로 옮긴다. 보이는 탭은 11개: 사용법·내역·대시보드·부부·자산기록·투자·즐겨찾기·반복·문자입력·자산·설정.
 - [투자] 탭 계좌 행: 7 신랑 메리츠, 8 신랑 ISA(한투), 9 신랑 합계, 10 신부 메리츠, 11 신부 ISA(한투), 12 신부 합계. 직접입력 칸 H(평가)·I(원금).
@@ -213,7 +211,7 @@ Expected: `# pass 6`, `# fail 0`
 ```bash
 cd "/mnt/d/budget book" && git add apps-script/kis_logic.gs tests/kis.test.js && git commit -m "feat: 한투 ISA 순수 로직 — 계좌번호·토큰·잔고 요청·응답 해석 (조회 전용)
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -350,7 +348,7 @@ Expected: invest `# pass 5`, meritz `# pass 18`, 둘 다 `# fail 0`
 ```bash
 cd "/mnt/d/budget book" && git add apps-script/invest_logic.gs apps-script/meritz_logic.gs tests/invest.test.js && git commit -m "feat: 투자기록 한 줄·날짜 덮어쓰기 순수 로직, 메리츠 투자원금 추정
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -620,7 +618,7 @@ Expected: pytest 전부 통과, node 다섯 파일 모두 `# fail 0`, `문법 OK
 ```bash
 cd "/mnt/d/budget book" && git add apps-script deploy_script.py tests/test_deploy.py && git commit -m "feat: 한투 ISA 조회 연결·증권 연동 메뉴·메리츠 원금(H9)·06시 투자기록
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -922,7 +920,7 @@ Expected: 모두 통과 (`0 failed`)
 ```bash
 cd "/mnt/d/budget book" && git add -A && git commit -m "feat: [투자] 탭 생성기 — 계좌 4개 합산·직접입력·전일/전월말 대비·월말/30일 추이, 자산 연동 4계좌
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -1117,7 +1115,7 @@ Expected: pytest `0 failed`, 세 통합 시험 모두 `통과` (종료코드 0)
 ```bash
 cd "/mnt/d/budget book" && git add -A && git commit -m "feat: 운영 마이그레이션에 투자 탭 묶음(한 번만) 추가, 투자 탭 임시 시트 통합 시험
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -1126,12 +1124,11 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Files:**
 - Modify: `README.md`
-- Modify: `~/.claude/projects/-home-jack/memory/project_budget_book.md`
 
 - [ ] **Step 1: 적용 전 스냅숏** (사용자 데이터 비교용, 스크래치패드에 저장)
 
 ```bash
-python3 <<'EOF' > /tmp/claude-1000/-home-jack/49a9863d-50cd-4147-96fb-6b7088fd25f6/scratchpad/invest_before.json
+python3 <<'EOF' > /tmp/budget-book/invest_before.json
 import sys, json; sys.path.insert(0, "/mnt/d/budget book")
 from pathlib import Path
 from googleapiclient.discovery import build
@@ -1150,8 +1147,8 @@ Run: `cd "/mnt/d/budget book" && timeout 300 python3 migrate_couple.py && python
 Expected: `적용: …` 출력, `업로드 완료: scriptId=…`
 
 - [ ] **Step 3: 운영 확인**
-  - 같은 스냅숏을 `invest_after.json`으로 다시 떠서 `python3 -c "import json;d='/tmp/claude-1000/-home-jack/49a9863d-50cd-4147-96fb-6b7088fd25f6/scratchpad/';print(json.load(open(d+'invest_before.json'))==json.load(open(d+'invest_after.json')))"` → `True`
-  - 보이는 탭 11개가 Global Constraints 순서와 같은지, 21+3개 탭 전체 오류 칸(`#REF` `#N/A` `#VALUE` `#ERROR` `#DIV` `#NAME` `#NUM`) 0인지, [투자] 차트 2개인지 (`scratchpad/post.py` 재사용)
+  - 같은 스냅숏을 `invest_after.json`으로 다시 떠서 `python3 -c "import json;d='/tmp/budget-book/';print(json.load(open(d+'invest_before.json'))==json.load(open(d+'invest_after.json')))"` → `True`
+  - 보이는 탭 11개가 Global Constraints 순서와 같은지, 21+3개 탭 전체 오류 칸(`#REF` `#N/A` `#VALUE` `#ERROR` `#DIV` `#NAME` `#NUM`) 0인지, [투자] 차트 2개인지 (`/tmp/budget-book/post.py` 재사용)
   - `투자!G7:G11` 상태가 키 발급 전이므로 '키없음' 또는 '아직 갱신 전'인지
   - 마이그레이션을 한 번 더 돌려 `addSheet`/`addChart`가 없는지 (출력의 서식 요청 수가 사용법 서식만큼인지)
 
@@ -1167,5 +1164,5 @@ cd "/mnt/d/budget book" && git add README.md && git commit -m "docs: 투자 탭 
 
 운영 적용 완료: 사용자 입력 데이터 불변, 오류 칸 0.
 
-Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
+"
 ```

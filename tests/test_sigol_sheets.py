@@ -1,4 +1,4 @@
-"""시골쥐 기능 시트 (2026-10-14 설계 docs/superpowers/specs/2026-10-14-sigol-sheets-design.md)."""
+"""시골쥐 기능 시트 (2026-10-14 설계 docs/design/specs/2026-10-14-sigol-sheets-design.md)."""
 import asset_status
 import build_budget
 import cards

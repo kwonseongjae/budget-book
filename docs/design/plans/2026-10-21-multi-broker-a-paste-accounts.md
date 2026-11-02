@@ -1,21 +1,19 @@
 # 다증권사 계좌 (A단계: 계좌 목록 · 붙여넣기 · 계좌 탭 자동 생성) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** 메리츠·한투 외 증권사 계좌를 `증권계좌` 목록에 적고, 증권사 앱의 보유종목 표를 `증권종목`에 붙여넣으면 종목이 반영되며, 계좌를 적는 즉시 그 계좌의 상세 탭 `계좌_<이름>`이 자동으로 만들어진다.
 
 **Architecture:** 순수 로직(`positions_logic.gs`: 표 해석·행 교체·이름 검증)과 시트 연결(`positions.gs`: 붙여넣기 반영·탭 동기화)을 나누고, onEdit 라우팅(`logic.gs routeEdit` → `triggers.gs onEdit`)으로 호출한다. 시트 쪽은 새 탭 두 개(`broker_accounts.py`, `broker_positions.py`)를 기존 `sigol_tabs.MODULES` 경로로 만들고 `migrate_couple.py`가 운영 시트에 한 번만 추가한다. **기존 `투자`·`투자기록`·`주식투자`는 이 단계에서 건드리지 않는다** (B단계 별도 계획).
 
 **Tech Stack:** Python 3 + pytest(시트 생성기), Google Apps Script(V8) + `node --test`(가짜 시트 `tests/fake_sheets.js`), Sheets API.
 
-**Spec:** `docs/superpowers/specs/2026-10-21-multi-broker-design.md` (§2 범위의 `증권계좌`·`증권종목`·붙여넣기·§6 계좌 탭 자동 생성·§5 파서. §3.3 투자기록 변환·§7 투자/주식투자 전환·§4 어댑터·§8 마이그레이션은 B단계)
+**Spec:** `docs/design/specs/2026-10-21-multi-broker-design.md` (§2 범위의 `증권계좌`·`증권종목`·붙여넣기·§6 계좌 탭 자동 생성·§5 파서. §3.3 투자기록 변환·§7 투자/주식투자 전환·§4 어댑터·§8 마이그레이션은 B단계)
 
 ## Global Constraints
 
 - 코드·문서·테스트에는 실제 이름 금지, 사람은 **신랑 / 신부**만 쓴다 (`names.py`, `conftest.py`가 테스트를 기본 이름으로 고정).
 - 조회 전용: 주문·환전 경로 없음. 앱 키·계좌번호는 코드·git·시트에 두지 않는다 (이 단계는 키가 필요 없다).
 - 시트 사용자 문구는 한국어, 응답·보고도 한국어.
-- 커밋은 파일 경로를 지정해서 한다 (`git add -A` 금지). 커밋 메시지 끝에 `Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>`.
+- 커밋은 파일 경로를 지정해서 한다 (`git add -A` 금지). 커밋 메시지 끝에 ``.
 - 사용자가 직접 입력하는 칸(`INPUTS`)은 `values()`가 쓰지 않는다. 스크립트가 쓰는 칸(결과 메시지, 마지막 붙여넣기 날짜, 정규 종목 표)도 `values()`로 덮어쓰지 않는다.
 - 계좌는 최대 10개 (`증권계좌!A5:A14`), 붙여넣기 표는 최대 200줄 (`A6:F205`), 정규 종목 표는 최대 1000줄 (`H6:N1005`).
 - 기존 테스트(pytest 395, node 134)는 모두 계속 통과해야 한다. 탭 목록·검증 목록을 세는 기존 테스트의 기대값 갱신은 해당 Task에서 한다.
@@ -290,7 +288,7 @@ Expected: PASS — `# pass 9`, `# fail 0`
 git add apps-script/positions_logic.gs tests/positions.test.js
 git commit -m "feat: 붙여넣은 보유종목 표 해석(parsePositions) 순수 로직
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -481,7 +479,7 @@ Expected: PASS — 새 5개 통과, 전체 `# fail 0`
 git add tests/fake_sheets.js apps-script/positions.gs tests/positions_import.test.js
 git commit -m "feat: 붙여넣기 반영(importPositions)과 가짜 스프레드시트
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -677,7 +675,7 @@ Expected: `# fail 0` (기존 134 + 새 테스트 모두 통과)
 git add apps-script/positions.gs apps-script/logic.gs apps-script/triggers.gs tests/account_tab.test.js
 git commit -m "feat: 증권계좌 이름으로 계좌 탭 자동 생성·이름 변경·숨김, onEdit 라우팅
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---
@@ -927,7 +925,7 @@ Final: `python3 -m pytest -q` → `# failed 0`
 git add layout.py broker_accounts.py broker_positions.py sigol_tabs.py styling.py deploy_script.py tests/test_broker_tabs.py tests/test_deploy.py
 git commit -m "feat: 증권계좌·증권종목 탭 추가(다증권사 A단계)
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 (다른 테스트 파일의 기대값을 고쳤다면 그 경로도 `git add`에 지정한다.)
 
@@ -1001,7 +999,7 @@ Expected: 전부 통과 (`test_guide_covers_every_visible_tab_and_faq`가 `[증�
 git add guide.py README.md docs/USAGE.md tests/test_broker_tabs.py
 git commit -m "docs: 증권계좌·증권종목 사용법
 
-Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>"
+"
 ```
 
 ---

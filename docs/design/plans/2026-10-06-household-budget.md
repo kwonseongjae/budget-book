@@ -1,14 +1,12 @@
 # 부부 가계부 (Google Sheets) Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
-
 **Goal:** Python 스크립트 한 번 실행으로 부부 공유 가계부 구글 시트(탭·드롭다운·수식·차트·보호)를 만들고, 시트에 연결된 Apps Script로 이름 자동 변경·즐겨찾기·반복·문자입력·예산 알림을 붙인다.
 
 **Architecture:** `layout.py`(탭/검증/서식/보호) · `formulas.py`(핵심 수식) · `views.py`(추이/달력/검색 수식) · `charts.py`(차트/조건부서식)는 Sheets API 요청 JSON을 만드는 순수 함수이고, `build_budget.py`가 이를 조립해 한 번 호출한다. Apps Script는 `logic.gs`(순수 로직, node로 테스트)와 `triggers.gs`(시트 연결부)로 나누고 `deploy_script.py`가 Apps Script API로 업로드한다. 모든 데이터는 `내역` 탭 하나에 쌓이고 나머지 탭은 수식으로 읽기만 한다.
 
 **Tech Stack:** Python 3.12, google-api-python-client, google-auth-oauthlib, pytest 8 / Google Apps Script V8 / Node 22 (`node --test`)
 
-**Spec:** `docs/superpowers/specs/2026-10-06-household-budget-design.md`
+**Spec:** `docs/design/specs/2026-10-06-household-budget-design.md`
 
 ## Global Constraints
 

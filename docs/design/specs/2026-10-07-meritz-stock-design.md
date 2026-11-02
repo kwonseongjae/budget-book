@@ -1,6 +1,6 @@
 # 메리츠증권 주식 연동 설계 (v2)
 
-기존 가계부 시트(`docs/superpowers/specs/2026-10-06-household-budget-design.md`)에 메리츠증권 Open API로 보유 종목과 금액을 자동으로 가져오는 기능을 더한다.
+기존 가계부 시트(`docs/design/specs/2026-10-06-household-budget-design.md`)에 메리츠증권 Open API로 보유 종목과 금액을 자동으로 가져오는 기능을 더한다.
 
 ## 목표
 - 메리츠증권 슈퍼365 계좌의 순자산·보유 종목·원화/외화 보유금액을 시트에 자동 반영한다.
