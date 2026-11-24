@@ -10,7 +10,7 @@ def _by_range(values):
 
 def test_invest_tabs_defined_visible_and_hidden():
     props = {t: (sid, rows, cols, hidden) for t, sid, rows, cols, hidden in layout.SHEETS}
-    assert props["투자"] == (1900, 100, 10, False)
+    assert props["투자"] == (1900, 100, 11, False)  # K열 종목 평가(11-24)
     assert props["한투원본"] == (1950, 3, 7, True)
     assert props["투자기록"] == (2000, 1000, 14, True)
     assert "주식_신랑" in layout.TUCKED
@@ -164,4 +164,16 @@ def test_cash_column_is_wide_and_navy_header():
     import styling
     assert styling.COL_WIDTHS[invest.INVEST][9] >= 120
     heads = [r["repeatCell"]["range"] for r in styling.header_requests() if "repeatCell" in r]
-    assert layout.a1_to_grid("투자!A6:J6") in heads
+    assert layout.a1_to_grid("투자!A6:K6") in heads  # K열 종목 평가까지 머리글(11-24)
+
+
+def test_stock_value_column_makes_principal_plus_pl_visible():
+    """11-24 성재 지적: 평가금액(현금 포함)과 손익(종목 기준)이 달라 '원금+손익=평가'가 안 맞아 보임.
+    B는 총자산(현금 포함)으로 이름을 바꾸고 K에 종목 평가(=원금+손익)를 둔다. 다른 탭이 쓰는 B·C·D 위치는 그대로."""
+    vals = _by_range(invest.invest_values())
+    assert vals["투자!A6:I6"][0][1] == "총자산(현금 포함)"
+    assert vals["투자!K6"] == [["종목 평가(=원금+손익)"]]
+    for r in (7, 8, 9, 10, 11, 12, 13):
+        assert vals[f"투자!K{r}"] == [[f'=IF(AND(ISNUMBER(C{r}),ISNUMBER(D{r})),C{r}+D{r},"")']]
+    import layout
+    assert next(x for x in layout.SHEETS if x[0] == "투자")[3] >= 11  # K열이 있어야 한다

@@ -45,8 +45,10 @@ ACCOUNT_ROWS = [
 ]
 TOTAL_ROWS = [(nm("신랑 합계"), 9, 7, 8), (nm("신부 합계"), 12, 10, 11)]
 KPI_HEAD = ["부부 합산 평가금액", "투자원금", "평가손익", "수익률", "전일 대비", "전월말 대비"]
-TABLE_HEAD = ["계좌", "평가금액", "원금", "손익", "수익률", "마지막 갱신", "상태", "직접입력 평가", "직접입력 원금"]
+TABLE_HEAD = ["계좌", "총자산(현금 포함)", "원금", "손익", "수익률", "마지막 갱신", "상태", "직접입력 평가", "직접입력 원금"]
 CASH_HEAD = "현금(예수금)"  # J열: 평가금액(총자산) − 종목 평가. 손익·수익률은 현금을 뺀 종목 기준
+STOCK_HEAD = "종목 평가(=원금+손익)"  # K열(2026-11-24): 총자산 = 종목 평가 + 현금이 눈에 맞게
+STOCK_ROWS = (7, 8, 9, 10, 11, 12, 13)
 LOG_HEAD = ["날짜", nm("신랑 메리츠 평가"), "원금", nm("신랑 ISA 평가"), "원금", nm("신부 메리츠 평가"), "원금",
             nm("신부 ISA 평가"), "원금", "합계 평가", "합계 원금", "빠진 계좌 수", "기타 평가", "기타 원금"]
 HOLD_HEAD = ["코드", "종목명", "매입금액", "평가금액"]  # 한투종목 탭 (구분 다음 열들)
@@ -64,6 +66,11 @@ def _pl(r: int, stock: str = '""') -> list[str]:
 def cash_cell(r: int, stock: str) -> str:
     """J열 현금(예수금) = 평가금액 − 종목 평가 (자동 값일 때만)."""
     return f'=IF(AND(ISNUMBER(B{r}),NOT(ISNUMBER(H{r})),ISNUMBER({stock})),B{r}-{stock},"")'
+
+
+def stock_cell(r: int) -> str:
+    """K열 종목 평가 = 원금 + 손익 (둘 다 숫자일 때만)."""
+    return f'=IF(AND(ISNUMBER(C{r}),ISNUMBER(D{r})),C{r}+D{r},"")'
 
 
 def account_row(name, r, value, principal, at, status, msg, stock='""') -> list[str]:
@@ -158,8 +165,8 @@ def _trend_tables() -> list[dict]:
 
 
 def invest_values() -> list[dict]:
-    note = ("평가금액=현금 포함 총자산 · 원금=종목 매입금액 합계 · 손익·수익률=현금을 뺀 종목 기준 · "
-            "H·I에 숫자를 적으면 그 계좌는 직접입력 값")
+    note = ("총자산=종목 평가+현금 · 종목 평가=원금+손익 · 원금=종목 매입금액 합계 · 손익·수익률=현금을 뺀 종목 기준 · "
+            "H·I 숫자=직접입력")
     out = [v(f"{INVEST}!A1", [["우리집 투자"]]),
            v(f"{INVEST}!G1:I1", [["지금 갱신", False, "◀ 체크하면 자동 갱신을 켠 사람의 계좌를 바로 갱신"]]),
            v(f"{INVEST}!A2", [[note]]), v(f"{INVEST}!A3:F3", [KPI_HEAD]), v(f"{INVEST}!A4:F4", [_kpi()]),
@@ -170,6 +177,7 @@ def invest_values() -> list[dict]:
             + [v(f"{INVEST}!J{r[1]}", [[f'=IF(COUNT(J{r[2]},J{r[3]})=0,"",SUM(J{r[2]},J{r[3]}))']]) for r in TOTAL_ROWS])
     out += [v(f"{INVEST}!A13:G13", [extra_row()]),
             v(f"{INVEST}!J13", [[f'=IF(COUNT({_LIST}!$J$5:$J$14)=0,"",IFERROR(SUM(FILTER({_LIST}!$E$5:$E$14,ISNUMBER({_LIST}!$J$5:$J$14))),""))']])]
+    out += [v(f"{INVEST}!K6", [[STOCK_HEAD]])] + [v(f"{INVEST}!K{r}", [[stock_cell(r)]]) for r in STOCK_ROWS]
     return (out + _overview() + _trend_tables()
             # 머리글·사람 이름만: B2:G3은 스크립트가 쓰는 결과라 재실행 때 지우면 안 된다
             + [v(f"{KIS_RAW}!A1:G1", [KIS_HEAD]), v(f"{KIS_RAW}!A2:A3", [[nm("신랑")], [nm("신부")]]),
@@ -185,7 +193,7 @@ def structure_requests() -> list[dict]:
             (f"{INVEST}!E7:E12", "PERCENT", "0.0%"), (f"{INVEST}!F7:F12", "DATE_TIME", "mm/dd hh:mm"),
             (f"{INVEST}!H7:I12", "NUMBER", "#,##0"),
             (f"{INVEST}!B13:C13", "NUMBER", "#,##0"), (f"{INVEST}!D13", "NUMBER", "[Red]+#,##0;[Blue]-#,##0;0"),
-            (f"{INVEST}!E13", "PERCENT", "[Red]0.0%;[Blue]-0.0%;0.0%"), (f"{INVEST}!F13", "DATE_TIME", "mm/dd"), (f"{INVEST}!J13", "NUMBER", "#,##0"), (f"{INVEST}!A41:A100", "DATE", "yyyy-mm"),
+            (f"{INVEST}!E13", "PERCENT", "[Red]0.0%;[Blue]-0.0%;0.0%"), (f"{INVEST}!F13", "DATE_TIME", "mm/dd"), (f"{INVEST}!J13", "NUMBER", "#,##0"), (f"{INVEST}!K7:K13", "NUMBER", "#,##0"), (f"{INVEST}!A41:A100", "DATE", "yyyy-mm"),
             (f"{INVEST}!B41:C100", "NUMBER", "#,##0"), (f"{INVEST}!E41:E100", "DATE", "m/d"),
             (f"{INVEST}!F41:F100", "NUMBER", "#,##0"), (f"{KIS_RAW}!E2:E3", "DATE_TIME", "yyyy-mm-dd hh:mm"),
             (f"{KIS_RAW}!F2:G3", "NUMBER", "#,##0"), (f"{L}!A2:A1000", "DATE", "yyyy-mm-dd"),

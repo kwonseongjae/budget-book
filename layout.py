@@ -51,7 +51,7 @@ SHEETS = [
     (FAV, 900, 50, 7, False),
     (COUPLE, 1700, 60, 11, False),
     (STOCKS, 2400, 150, 28, False),  # 투자 바로 왼쪽에 고정
-    (INVEST, 1900, 100, 10, False),
+    (INVEST, 1900, 100, 11, False),  # K열 종목 평가(11-24)
     (ASSET_STATUS, 2100, 90, 16, False),  # 81~85행 월별 저축률 가로형 표  # K열: 부채 표 대출명 선택지(숨은 보조 열)
     (SETTINGS, 200, 60, 13, False),
     (ASSETS, 300, 50, 12, False),  # J 통화·K 외화 잔액(달러통장 등), L 결제수단 목록(숨은 보조 열)
