@@ -177,3 +177,9 @@ def test_stock_value_column_makes_principal_plus_pl_visible():
         assert vals[f"투자!K{r}"] == [[f'=IF(AND(ISNUMBER(C{r}),ISNUMBER(D{r})),C{r}+D{r},"")']]
     import layout
     assert next(x for x in layout.SHEETS if x[0] == "투자")[3] >= 11  # K열이 있어야 한다
+
+
+def test_no_account_marker_shows_account_missing():
+    """11-24: 계좌 자체가 없으면 직접입력 평가(H)에 '없음' → 상태 '계좌 없음'(키 없음 오류로 보이지 않게)."""
+    row = _by_range(invest.invest_values())["투자!A8:G8"][0]
+    assert row[6].startswith('=IF(H8="없음","계좌 없음",')

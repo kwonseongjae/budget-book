@@ -83,9 +83,9 @@ def account_row(name, r, value, principal, at, status, msg, stock='""') -> list[
              f'=IF(NOT(ISNUMBER(B{r})),"",IF(ISNUMBER(I{r}),I{r},IF(ISNUMBER(H{r}),"",IF(ISNUMBER({principal}),{principal},""))))']
             + _pl(r, stock)
             + [f'=IF(ISNUMBER(H{r}),"",IF(ISNUMBER({at}),{at},""))',
-               (f'=IF(ISNUMBER(H{r}),"직접입력",IF({status}="","아직 갱신 전",IF({status}="성공",'
+               (f'=IF(H{r}="없음","계좌 없음",IF(ISNUMBER(H{r}),"직접입력",IF({status}="","아직 갱신 전",IF({status}="성공",'
                 f'IF(NOW()-{at}>3,"오래됨","자동"),IF({status}="키없음","키 없음",'
-                f'{status}&IF({msg}="",""," ("&LEFT({msg},30)&")")))))')])
+                f'{status}&IF({msg}="",""," ("&LEFT({msg},30)&")"))))))')])  # H='없음' = 계좌 자체가 없음(11-24)
 
 
 def paired_principal(rows) -> str:
