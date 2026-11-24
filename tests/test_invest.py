@@ -52,7 +52,9 @@ def test_totals_kpi_and_changes_tolerate_empty_log():
     kpi = vals["투자!A4:F4"][0]
     assert kpi[0] == '=IF(COUNT(B7,B8,B10,B11,B13)=0,"",SUM(B7,B8,B10,B11,B13))'   # 13행 = 기타 증권사(붙여넣기)
     assert kpi[4].startswith("=IFERROR(") and kpi[5].startswith("=IFERROR(")
-    assert "EOMONTH(last,-1)" in kpi[5]
+    # 11-24: 기록끼리가 아니라 오늘 합계(A4)와 비교한다 — 기록은 다음 날 06시에 전날 날짜로 쌓여 하루 늦기 때문
+    assert "A4-INDEX(t,MATCH(p,d,0))" in kpi[4] and "d<TODAY()" in kpi[4]
+    assert "A4-INDEX(t,MATCH(pe,d,0))" in kpi[5] and "EOMONTH(TODAY(),-1)" in kpi[5]
 
 
 def test_month_end_and_recent_30_tables():

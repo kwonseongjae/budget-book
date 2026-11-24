@@ -112,9 +112,11 @@ def extra_row() -> list[str]:
 def _kpi() -> list[str]:
     acc = "B7,B8,B10,B11,B13"
     d, t = f"FILTER({L}!A2:A,{L}!A2:A<>\"\")", f"FILTER({L}!J2:J,{L}!A2:A<>\"\")"
-    prev_day = f'=IFERROR(LET(t,{t},n,ROWS(t),IF(n<2,"",INDEX(t,n)-INDEX(t,n-1))),"")'
-    prev_month = (f'=IFERROR(LET(d,{d},t,{t},last,MAX(d),pe,MAX(FILTER(d,d<=EOMONTH(last,-1))),'
-                  f'INDEX(t,MATCH(last,d,0))-INDEX(t,MATCH(pe,d,0))),"")')
+    # 오늘 합계(A4) − 기록: 기록은 다음 날 06시에 전날 날짜로 쌓여 기록끼리 비교하면 하루 늦는다(2026-11-24)
+    prev_day = (f'=IFERROR(LET(d,{d},t,{t},p,MAX(FILTER(d,d<TODAY())),'
+                f'IF(A4="","",A4-INDEX(t,MATCH(p,d,0)))),"")')
+    prev_month = (f'=IFERROR(LET(d,{d},t,{t},pe,MAX(FILTER(d,d<=EOMONTH(TODAY(),-1))),'
+                  f'IF(A4="","",A4-INDEX(t,MATCH(pe,d,0)))),"")')
     return [f'=IF(COUNT({acc})=0,"",SUM({acc}))', f'=IF(COUNT(C7,C8,C10,C11,C13)=0,"",SUM(C7,C8,C10,C11,C13))',
             '=IF(COUNT(D7,D8,D10,D11,D13)=0,"",SUM(D7,D8,D10,D11,D13))', f'=IFERROR(C4/({paired_principal((7, 8, 10, 11, 13))}),"")',
             prev_day, prev_month]
